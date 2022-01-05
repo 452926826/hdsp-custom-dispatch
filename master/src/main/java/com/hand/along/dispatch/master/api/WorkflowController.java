@@ -3,8 +3,7 @@ package com.hand.along.dispatch.master.api;
 import com.hand.along.dispatch.master.app.service.MonitorService;
 import com.hand.along.dispatch.master.app.service.WorkflowService;
 import com.hand.along.dispatch.master.domain.Workflow;
-import com.hand.along.dispatch.master.domain.WorkflowExecution;
-import com.hand.along.dispatch.master.domain.monitor.MasterMonitorInfo;
+import com.hand.along.dispatch.common.domain.monitor.MasterMonitorInfo;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,8 +24,8 @@ public class WorkflowController {
     public ResponseEntity<?> runWorkflow(@PathVariable(name = "organizationId") Long tenantId,
                                          @RequestBody Workflow workflow) {
         workflow.setTenantId(tenantId);
-        WorkflowExecution execution =  workflowService.execute(workflow);
-        return ResponseEntity.ok(execution);
+        workflowService.execute(workflow);
+        return ResponseEntity.ok(workflow);
     }
 
     @PostMapping("/cron")

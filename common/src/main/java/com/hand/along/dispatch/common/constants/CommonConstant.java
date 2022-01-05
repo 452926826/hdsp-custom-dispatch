@@ -2,9 +2,14 @@ package com.hand.along.dispatch.common.constants;
 
 public interface CommonConstant {
     public static final String MASTER_LOCK="I_AM_MASTER";
-    public static final String STANDBY_MASTER="STANDBY_MASTER";
+    /**
+     * 消息类型
+     */
     public static final String JOB="JOB";
     public static final String INFO="INFO";
+    public static final String EXECUTE_WORKFLOW="EXECUTE";
+    public static final String CRON_WORKFLOW="CRON";
+    public static final String STANDBY_INFO="STANDBY";
     /**
      * 执行状态
      */

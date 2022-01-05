@@ -1,21 +1,25 @@
 package com.hand.along.dispatch.master.infra.election;
 
-import com.hand.along.dispatch.common.utils.CommonUtil;
+import com.hand.along.dispatch.common.constants.CommonConstant;
+import com.hand.along.dispatch.common.domain.monitor.MasterMonitorInfo;
 import com.hand.along.dispatch.common.utils.CustomThreadPool;
+import com.hand.along.dispatch.common.utils.JSON;
 import com.hand.along.dispatch.common.utils.RedisHelper;
 import com.hand.along.dispatch.master.app.service.WorkflowService;
+import com.hand.along.dispatch.master.infra.handler.GraphUtil;
+import com.hand.along.dispatch.master.infra.netty.client.NettyClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.redis.util.RedisLockRegistry;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.Collections;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 import static com.hand.along.dispatch.common.constants.CommonConstant.MASTER_LOCK;
-import static com.hand.along.dispatch.common.constants.CommonConstant.STANDBY_MASTER;
 
 @Component
 @Slf4j
@@ -23,12 +27,10 @@ public class ElectionConfiguration {
     private final RedisLockRegistry redisLockRegistry;
     private final WorkflowService workflowService;
     private final RedisHelper redisHelper;
+    private final CurrentMasterService currentMasterService;
+
     private static final String MASTER_ELECTION_LOCK = "master_lock";
     private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = CustomThreadPool.getScheduledExecutor();
-    @Value("${netty.server.serverPort:31020}")
-    private Integer serverPort;
-    @Value("${netty.server.ip-pattern}")
-    private String pattern;
     @Value("${netty.server.expire:10}")
     private Integer expire;
 
@@ -37,33 +39,41 @@ public class ElectionConfiguration {
 
     public ElectionConfiguration(RedisLockRegistry redisLockRegistry,
                                  WorkflowService workflowService,
-                                 RedisHelper redisHelper) {
+                                 RedisHelper redisHelper,
+                                 CurrentMasterService currentMasterService) {
         this.redisLockRegistry = redisLockRegistry;
         this.workflowService = workflowService;
         this.redisHelper = redisHelper;
+        this.currentMasterService = currentMasterService;
     }
 
     @PostConstruct
     public void election() {
-        String ip = CommonUtil.getIp(pattern);
-        String currentUrl = String.format("%s:%s", ip, serverPort);
+        String currentUrl = currentMasterService.getCurrentIp();
         // Redis锁
         Lock lock = redisLockRegistry.obtain(MASTER_ELECTION_LOCK);
         scheduledThreadPoolExecutor
                 .scheduleAtFixedRate(() -> {
                     try {
-                        // master已经选举出来了
+                        // 主节点已经选举出来了
                         if (redisHelper.hasKey(MASTER_LOCK)) {
                             String masterUrl = redisHelper.strGet(MASTER_LOCK);
                             if (masterUrl.equals(currentUrl)) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug("当前服务就是master,重置过期时间");
+                                    log.debug("当前服务就是主节点,重置过期时间");
                                 }
                                 redisHelper.setExpire(MASTER_LOCK, expire);
                             } else {
-                                log.info("当前master的URl为：{}", masterUrl);
-                                // 放到standby
-                                redisHelper.setIrt(STANDBY_MASTER, currentUrl);
+                                log.info("当前主节点的URl为：{}", masterUrl);
+                                // 把自己的信息发送到主节点
+                                MasterMonitorInfo monitorInfo = MasterMonitorInfo.builder()
+                                        .ipAddr(currentUrl)
+                                        .master(false)
+                                        .standby(true)
+                                        .executorInfoList(Collections.singletonList(GraphUtil.getExecutorInfo()))
+                                        .build();
+                                monitorInfo.setMessageType(CommonConstant.STANDBY_INFO);
+                                NettyClient.sendMessage(JSON.toJson(monitorInfo));
                             }
                         } else {
                             log.info("尝试选举为master");
@@ -73,8 +83,6 @@ public class ElectionConfiguration {
                                 // 把当前服务设置为master
                                 redisHelper.strSet(MASTER_LOCK, currentUrl, expire, TimeUnit.SECONDS);
                                 isMaster = true;
-                                // 删除standby的数据
-                                redisHelper.setDel(STANDBY_MASTER, currentUrl);
                                 // 此时需要加载所有没有运行完的程序
                                 workflowService.loadUnfinishedWorkflow();
                                 // 等待2s 让没有获取到锁的其他standby的节点异常

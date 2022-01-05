@@ -8,13 +8,16 @@ import com.hand.along.dispatch.common.domain.JobExecutionExample;
 import com.hand.along.dispatch.common.infra.mapper.ExecutionLogMapper;
 import com.hand.along.dispatch.common.infra.mapper.JobExecutionMapper;
 import com.hand.along.dispatch.common.utils.CommonUtil;
+import com.hand.along.dispatch.common.utils.JSON;
 import com.hand.along.dispatch.master.app.service.BaseStatusService;
 import com.hand.along.dispatch.master.app.service.WorkflowService;
 import com.hand.along.dispatch.master.domain.*;
 import com.hand.along.dispatch.common.exceptions.CommonException;
+import com.hand.along.dispatch.master.infra.election.ElectionConfiguration;
 import com.hand.along.dispatch.master.infra.handler.GraphUtil;
 import com.hand.along.dispatch.master.infra.mapper.WorkflowExecutionMapper;
 import com.hand.along.dispatch.master.infra.mapper.WorkflowMapper;
+import com.hand.along.dispatch.master.infra.netty.client.NettyClient;
 import com.hand.along.dispatch.master.infra.quartz.QuartzHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -23,6 +26,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+
+import static com.hand.along.dispatch.common.constants.CommonConstant.EXECUTE_WORKFLOW;
 
 @Service
 @Slf4j
@@ -58,27 +63,33 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @return 返回执行记录
      */
     @Override
-    public WorkflowExecution execute(Workflow workflow) {
-        String graph = workflow.getGraph();
-        if (StringUtils.isEmpty(graph)) {
-            throw new CommonException("任务流图形为空");
+    public void execute(Workflow workflow) {
+        // 如果当前节点是主节点则直接执行
+        if (ElectionConfiguration.isMaster) {
+            String graph = workflow.getGraph();
+            if (StringUtils.isEmpty(graph)) {
+                throw new CommonException("任务流图形为空");
+            }
+            WorkflowExecution workflowExecution = WorkflowExecution.builder()
+                    .workflowId(workflow.getWorkflowId())
+                    .startDate(CommonUtil.now())
+                    .workflowGraph(graph)
+                    .executionStatus(CommonConstant.ExecutionStatus.READY.name())
+                    .build();
+            workflowExecutionMapper.insertSelective(workflowExecution);
+            ExecutionLog executionLog = ExecutionLog.builder()
+                    .executionId(workflowExecution.getWorkflowExecutionId())
+                    .executionType(CommonConstant.NodeType.WORKFLOW.name())
+                    .build();
+            executionLogMapper.insert(executionLog);
+            // 关联的日志记录
+            workflowExecution.setExecutionLog(executionLog);
+            graphUtil.parseGraph(graph, workflow, workflowExecution, Collections.EMPTY_LIST);
+        } else {
+            //如果当前节点不是主节点则发送到主节点执行
+            workflow.setMessageType(EXECUTE_WORKFLOW);
+            NettyClient.sendMessage(JSON.toJson(workflow));
         }
-        WorkflowExecution workflowExecution = WorkflowExecution.builder()
-                .workflowId(workflow.getWorkflowId())
-                .startDate(CommonUtil.now())
-                .workflowGraph(graph)
-                .executionStatus(CommonConstant.ExecutionStatus.READY.name())
-                .build();
-        workflowExecutionMapper.insertSelective(workflowExecution);
-        ExecutionLog executionLog = ExecutionLog.builder()
-                .executionId(workflowExecution.getWorkflowExecutionId())
-                .executionType(CommonConstant.NodeType.WORKFLOW.name())
-                .build();
-        executionLogMapper.insert(executionLog);
-        // 关联的日志记录
-        workflowExecution.setExecutionLog(executionLog);
-        graphUtil.parseGraph(graph, workflow, workflowExecution, Collections.EMPTY_LIST);
-        return workflowExecution;
     }
 
     /**

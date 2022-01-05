@@ -44,4 +44,7 @@ public class Workflow extends BaseDomain {
 
     @Transient
     private Graph graphObj;
+
+    @Transient
+    private String messageType;
 }

@@ -2,9 +2,13 @@ package com.hand.along.dispatch.master.infra.netty;
 
 import com.hand.along.dispatch.common.constants.CommonConstant;
 import com.hand.along.dispatch.common.domain.BaseMessage;
-import com.hand.along.dispatch.common.domain.JobNode;
-import com.hand.along.dispatch.common.utils.JSON;
 import com.hand.along.dispatch.common.domain.ExecutorInfo;
+import com.hand.along.dispatch.common.domain.JobNode;
+import com.hand.along.dispatch.common.utils.ApplicationHelper;
+import com.hand.along.dispatch.common.utils.JSON;
+import com.hand.along.dispatch.master.app.service.WorkflowService;
+import com.hand.along.dispatch.master.domain.Workflow;
+import com.hand.along.dispatch.master.infra.election.CurrentMasterService;
 import com.hand.along.dispatch.master.infra.handler.WorkflowJob;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -23,6 +27,9 @@ import static com.hand.along.dispatch.master.infra.netty.NettyServer.channelGrou
 @Slf4j
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     public static final Map<String, ExecutorInfo> slaveExecutorInfoMap = new HashMap<>();
+    private final WorkflowService workflowService = ApplicationHelper.getBean(WorkflowService.class);
+
+    private final CurrentMasterService currentMasterService = ApplicationHelper.getBean(CurrentMasterService.class);
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
@@ -61,16 +68,25 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         Channel channel = ctx.channel();
         ConcurrentHashMap<String, JobNode> activeNodeMap = WorkflowJob.activeNodeMap;
-        log.info("服务器收到消息: {}", msg.toString());
-        BaseMessage tmp = JSON.toObj(msg.toString(), BaseMessage.class);
+        String message = msg.toString();
+        log.info("服务器收到消息: {}", message);
+        BaseMessage tmp = JSON.toObj(message, BaseMessage.class);
         if (CommonConstant.JOB.equals(tmp.getMessageType())) {
-            JobNode jobNode = JSON.fromJson(msg.toString(), JobNode.class);
+            JobNode jobNode = JSON.fromJson(message, JobNode.class);
             String uniqueId = jobNode.getUniqueId();
             if (activeNodeMap.containsKey(uniqueId)) {
                 activeNodeMap.get(uniqueId).setStatus(jobNode.getStatus());
             }
         } else if (CommonConstant.INFO.equals(tmp.getMessageType())) {
-            slaveExecutorInfoMap.put(channel.remoteAddress().toString(), JSON.fromJson(msg.toString(), ExecutorInfo.class));
+            slaveExecutorInfoMap.put(channel.remoteAddress().toString(), JSON.fromJson(message, ExecutorInfo.class));
+        } else if (CommonConstant.EXECUTE_WORKFLOW.equals(tmp.getMessageType())) {
+            Workflow workflow = JSON.fromJson(message, Workflow.class);
+            workflowService.execute(workflow);
+        } else if (CommonConstant.CRON_WORKFLOW.equals(tmp.getMessageType())) {
+            Workflow workflow = JSON.fromJson(message, Workflow.class);
+            workflowService.cron(workflow);
+        } else if (CommonConstant.STANDBY_INFO.equals(tmp.getMessageType())){
+            currentMasterService.setStandby(message);
         }
 
     }
