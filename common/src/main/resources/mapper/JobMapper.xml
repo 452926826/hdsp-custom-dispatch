@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.along.dispatch.common.infra.mapper.JobMapper" >
+  <resultMap id="BaseResultMap" type="com.hand.along.dispatch.common.domain.Job" >
+    <id column="job_id" property="jobId" jdbcType="BIGINT" />
+    <result column="job_name" property="jobName" jdbcType="VARCHAR" />
+    <result column="job_code" property="jobCode" jdbcType="VARCHAR" />
+    <result column="job_description" property="jobDescription" jdbcType="VARCHAR" />
+    <result column="job_type" property="jobType" jdbcType="VARCHAR" />
+    <result column="priority_level" property="priorityLevel" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.hand.along.dispatch.common.domain.Job" extends="BaseResultMap" >
+    <result column="job_settings" property="jobSettings" jdbcType="LONGVARCHAR" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    job_id, job_name, job_code, job_description, job_type, priority_level
+  </sql>
+  <sql id="Blob_Column_List" >
+    job_settings
+  </sql>
+  <select id="selectByExampleWithBLOBs" resultMap="ResultMapWithBLOBs" parameterType="com.hand.along.dispatch.common.domain.JobExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    'true' as QUERYID,
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from job
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.hand.along.dispatch.common.domain.JobExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    'true' as QUERYID,
+    <include refid="Base_Column_List" />
+    from job
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from job
+    where job_id = #{jobId,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from job
+    where job_id = #{jobId,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.hand.along.dispatch.common.domain.JobExample" >
+    delete from job
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.Job" >
+    <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="jobId">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into job (job_id, job_name, job_code, 
+      job_description, job_type, priority_level, 
+      job_settings)
+    values (#{jobId,jdbcType=BIGINT}, #{jobName,jdbcType=VARCHAR}, #{jobCode,jdbcType=VARCHAR}, 
+      #{jobDescription,jdbcType=VARCHAR}, #{jobType,jdbcType=VARCHAR}, #{priorityLevel,jdbcType=VARCHAR}, 
+      #{jobSettings,jdbcType=LONGVARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.Job" >
+    <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="jobId">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into job
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="jobId != null" >
+        job_id,
+      </if>
+      <if test="jobName != null" >
+        job_name,
+      </if>
+      <if test="jobCode != null" >
+        job_code,
+      </if>
+      <if test="jobDescription != null" >
+        job_description,
+      </if>
+      <if test="jobType != null" >
+        job_type,
+      </if>
+      <if test="priorityLevel != null" >
+        priority_level,
+      </if>
+      <if test="jobSettings != null" >
+        job_settings,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="jobId != null" >
+        #{jobId,jdbcType=BIGINT},
+      </if>
+      <if test="jobName != null" >
+        #{jobName,jdbcType=VARCHAR},
+      </if>
+      <if test="jobCode != null" >
+        #{jobCode,jdbcType=VARCHAR},
+      </if>
+      <if test="jobDescription != null" >
+        #{jobDescription,jdbcType=VARCHAR},
+      </if>
+      <if test="jobType != null" >
+        #{jobType,jdbcType=VARCHAR},
+      </if>
+      <if test="priorityLevel != null" >
+        #{priorityLevel,jdbcType=VARCHAR},
+      </if>
+      <if test="jobSettings != null" >
+        #{jobSettings,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.hand.along.dispatch.common.domain.JobExample" resultType="java.lang.Integer" >
+    select count(*) from job
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update job
+    <set >
+      <if test="record.jobId != null" >
+        job_id = #{record.jobId,jdbcType=BIGINT},
+      </if>
+      <if test="record.jobName != null" >
+        job_name = #{record.jobName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.jobCode != null" >
+        job_code = #{record.jobCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.jobDescription != null" >
+        job_description = #{record.jobDescription,jdbcType=VARCHAR},
+      </if>
+      <if test="record.jobType != null" >
+        job_type = #{record.jobType,jdbcType=VARCHAR},
+      </if>
+      <if test="record.priorityLevel != null" >
+        priority_level = #{record.priorityLevel,jdbcType=VARCHAR},
+      </if>
+      <if test="record.jobSettings != null" >
+        job_settings = #{record.jobSettings,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExampleWithBLOBs" parameterType="map" >
+    update job
+    set job_id = #{record.jobId,jdbcType=BIGINT},
+      job_name = #{record.jobName,jdbcType=VARCHAR},
+      job_code = #{record.jobCode,jdbcType=VARCHAR},
+      job_description = #{record.jobDescription,jdbcType=VARCHAR},
+      job_type = #{record.jobType,jdbcType=VARCHAR},
+      priority_level = #{record.priorityLevel,jdbcType=VARCHAR},
+      job_settings = #{record.jobSettings,jdbcType=LONGVARCHAR}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update job
+    set job_id = #{record.jobId,jdbcType=BIGINT},
+      job_name = #{record.jobName,jdbcType=VARCHAR},
+      job_code = #{record.jobCode,jdbcType=VARCHAR},
+      job_description = #{record.jobDescription,jdbcType=VARCHAR},
+      job_type = #{record.jobType,jdbcType=VARCHAR},
+      priority_level = #{record.priorityLevel,jdbcType=VARCHAR}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.hand.along.dispatch.common.domain.Job" >
+    update job
+    <set >
+      <if test="jobName != null" >
+        job_name = #{jobName,jdbcType=VARCHAR},
+      </if>
+      <if test="jobCode != null" >
+        job_code = #{jobCode,jdbcType=VARCHAR},
+      </if>
+      <if test="jobDescription != null" >
+        job_description = #{jobDescription,jdbcType=VARCHAR},
+      </if>
+      <if test="jobType != null" >
+        job_type = #{jobType,jdbcType=VARCHAR},
+      </if>
+      <if test="priorityLevel != null" >
+        priority_level = #{priorityLevel,jdbcType=VARCHAR},
+      </if>
+      <if test="jobSettings != null" >
+        job_settings = #{jobSettings,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where job_id = #{jobId,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.hand.along.dispatch.common.domain.Job" >
+    update job
+    set job_name = #{jobName,jdbcType=VARCHAR},
+      job_code = #{jobCode,jdbcType=VARCHAR},
+      job_description = #{jobDescription,jdbcType=VARCHAR},
+      job_type = #{jobType,jdbcType=VARCHAR},
+      priority_level = #{priorityLevel,jdbcType=VARCHAR},
+      job_settings = #{jobSettings,jdbcType=LONGVARCHAR}
+    where job_id = #{jobId,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.hand.along.dispatch.common.domain.Job" >
+    update job
+    set job_name = #{jobName,jdbcType=VARCHAR},
+      job_code = #{jobCode,jdbcType=VARCHAR},
+      job_description = #{jobDescription,jdbcType=VARCHAR},
+      job_type = #{jobType,jdbcType=VARCHAR},
+      priority_level = #{priorityLevel,jdbcType=VARCHAR}
+    where job_id = #{jobId,jdbcType=BIGINT}
+  </update>
+</mapper>

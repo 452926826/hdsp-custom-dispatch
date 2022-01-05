@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.along.dispatch.common.infra.mapper.JobExecutionMapper">
+    <resultMap id="BaseResultMap" type="com.hand.along.dispatch.common.domain.JobExecution">
+        <id column="job_execution_id" property="jobExecutionId" jdbcType="BIGINT"/>
+        <result column="job_id" property="jobId" jdbcType="BIGINT"/>
+        <result column="execution_id" property="executionId" jdbcType="BIGINT"/>
+        <result column="execution_status" property="executionStatus" jdbcType="VARCHAR"/>
+        <result column="start_date" property="startDate" jdbcType="TIMESTAMP"/>
+        <result column="end_date" property="endDate" jdbcType="TIMESTAMP"/>
+        <result column="creation_date" property="creationDate" jdbcType="TIMESTAMP"/>
+        <result column="last_update_date" property="lastUpdateDate" jdbcType="TIMESTAMP"/>
+        <result column="created_by" property="createdBy" jdbcType="BIGINT"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="BIGINT"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="BIGINT"/>
+        <result column="tenant_id" property="tenantId" jdbcType="BIGINT"/>
+    </resultMap>
+    <resultMap id="ResultMapWithBLOBs" type="com.hand.along.dispatch.common.domain.JobExecution"
+               extends="BaseResultMap">
+        <result column="job_settings" property="jobSettings" jdbcType="LONGVARCHAR"/>
+    </resultMap>
+    <sql id="Example_Where_Clause">
+        <where>
+            <foreach collection="oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" suffix=")" prefixOverrides="and">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")"
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Update_By_Example_Where_Clause">
+        <where>
+            <foreach collection="example.oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" suffix=")" prefixOverrides="and">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")"
+                                             separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Base_Column_List">
+        job_execution_id, execution_id, job_id, execution_status, start_date, end_date, creation_date,
+        last_update_date, created_by, last_updated_by, object_version_number, tenant_id
+    </sql>
+    <sql id="Blob_Column_List">
+        job_settings
+    </sql>
+    <select id="selectByExampleWithBLOBs" resultMap="ResultMapWithBLOBs"
+            parameterType="com.hand.along.dispatch.common.domain.JobExecutionExample">
+        select
+        <if test="distinct">
+            distinct
+        </if>
+        'true' as QUERYID,
+        <include refid="Base_Column_List"/>
+        ,
+        <include refid="Blob_Column_List"/>
+        from job_execution
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>
+    </select>
+    <select id="selectByExample" resultMap="BaseResultMap"
+            parameterType="com.hand.along.dispatch.common.domain.JobExecutionExample">
+        select
+        <if test="distinct">
+            distinct
+        </if>
+        'true' as QUERYID,
+        <include refid="Base_Column_List"/>
+        from job_execution
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>
+    </select>
+    <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        ,
+        <include refid="Blob_Column_List"/>
+        from job_execution
+        where job_execution_id = #{jobExecutionId,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from job_execution
+        where job_execution_id = #{jobExecutionId,jdbcType=BIGINT}
+    </delete>
+    <delete id="deleteByExample" parameterType="com.hand.along.dispatch.common.domain.JobExecutionExample">
+        delete from job_execution
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </delete>
+    <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.JobExecution">
+        <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="jobExecutionId">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into job_execution (job_execution_id, execution_id, job_id, execution_status,
+        start_date, end_date, creation_date,
+        last_update_date, created_by, last_updated_by,
+        object_version_number, tenant_id, job_settings
+        )
+        values (#{jobExecutionId,jdbcType=BIGINT},#{executionId,jdbcType=BIGINT}, #{jobId,jdbcType=INTEGER},
+        #{executionStatus,jdbcType=VARCHAR},
+        #{startDate,jdbcType=TIMESTAMP}, #{endDate,jdbcType=TIMESTAMP}, #{creationDate,jdbcType=TIMESTAMP},
+        #{lastUpdateDate,jdbcType=TIMESTAMP}, #{createdBy,jdbcType=BIGINT}, #{lastUpdatedBy,jdbcType=BIGINT},
+        #{objectVersionNumber,jdbcType=BIGINT}, #{tenantId,jdbcType=BIGINT}, #{jobSettings,jdbcType=LONGVARCHAR}
+        )
+    </insert>
+    <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.JobExecution">
+        <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="jobExecutionId">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into job_execution
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="jobExecutionId != null">
+                job_execution_id,
+            </if>
+            <if test="jobId != null">
+                job_id,
+            </if>
+            <if test="executionId != null">
+                execution_id,
+            </if>
+            <if test="executionStatus != null">
+                execution_status,
+            </if>
+            <if test="startDate != null">
+                start_date,
+            </if>
+            <if test="endDate != null">
+                end_date,
+            </if>
+            <if test="creationDate != null">
+                creation_date,
+            </if>
+            <if test="lastUpdateDate != null">
+                last_update_date,
+            </if>
+            <if test="createdBy != null">
+                created_by,
+            </if>
+            <if test="lastUpdatedBy != null">
+                last_updated_by,
+            </if>
+            <if test="objectVersionNumber != null">
+                object_version_number,
+            </if>
+            <if test="tenantId != null">
+                tenant_id,
+            </if>
+            <if test="jobSettings != null">
+                job_settings,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="jobExecutionId != null">
+                #{jobExecutionId,jdbcType=BIGINT},
+            </if>
+            <if test="jobId != null">
+                #{jobId,jdbcType=BIGINT},
+            </if>
+            <if test="executionId != null">
+                #{executionId,jdbcType=BIGINT},
+            </if>
+            <if test="executionStatus != null">
+                #{executionStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="startDate != null">
+                #{startDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endDate != null">
+                #{endDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="creationDate != null">
+                #{creationDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="lastUpdateDate != null">
+                #{lastUpdateDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createdBy != null">
+                #{createdBy,jdbcType=BIGINT},
+            </if>
+            <if test="lastUpdatedBy != null">
+                #{lastUpdatedBy,jdbcType=BIGINT},
+            </if>
+            <if test="objectVersionNumber != null">
+                #{objectVersionNumber,jdbcType=BIGINT},
+            </if>
+            <if test="tenantId != null">
+                #{tenantId,jdbcType=BIGINT},
+            </if>
+            <if test="jobSettings != null">
+                #{jobSettings,jdbcType=LONGVARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <select id="countByExample" parameterType="com.hand.along.dispatch.common.domain.JobExecutionExample"
+            resultType="java.lang.Integer">
+        select count(*) from job_execution
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </select>
+    <update id="updateByExampleSelective" parameterType="map">
+        update job_execution
+        <set>
+            <if test="record.jobExecutionId != null">
+                job_execution_id = #{record.jobExecutionId,jdbcType=BIGINT},
+            </if>
+            <if test="record.jobId != null">
+                job_id = #{record.jobId,jdbcType=BIGINT},
+            </if>
+            <if test="record.executionId != null">
+                execution_id = #{record.executionId,jdbcType=BIGINT},
+            </if>
+            <if test="record.executionStatus != null">
+                execution_status = #{record.executionStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="record.startDate != null">
+                start_date = #{record.startDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.endDate != null">
+                end_date = #{record.endDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.creationDate != null">
+                creation_date = #{record.creationDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.lastUpdateDate != null">
+                last_update_date = #{record.lastUpdateDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.createdBy != null">
+                created_by = #{record.createdBy,jdbcType=BIGINT},
+            </if>
+            <if test="record.lastUpdatedBy != null">
+                last_updated_by = #{record.lastUpdatedBy,jdbcType=BIGINT},
+            </if>
+            <if test="record.objectVersionNumber != null">
+                object_version_number = #{record.objectVersionNumber,jdbcType=BIGINT},
+            </if>
+            <if test="record.tenantId != null">
+                tenant_id = #{record.tenantId,jdbcType=BIGINT},
+            </if>
+            <if test="record.jobSettings != null">
+                job_settings = #{record.jobSettings,jdbcType=LONGVARCHAR},
+            </if>
+        </set>
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByExampleWithBLOBs" parameterType="map">
+        update job_execution
+        set job_execution_id = #{record.jobExecutionId,jdbcType=BIGINT},
+        job_id = #{record.jobId,jdbcType=BIGINT},
+        execution_id = #{record.executionId,jdbcType=BIGINT},
+        execution_status = #{record.executionStatus,jdbcType=VARCHAR},
+        start_date = #{record.startDate,jdbcType=TIMESTAMP},
+        end_date = #{record.endDate,jdbcType=TIMESTAMP},
+        creation_date = #{record.creationDate,jdbcType=TIMESTAMP},
+        last_update_date = #{record.lastUpdateDate,jdbcType=TIMESTAMP},
+        created_by = #{record.createdBy,jdbcType=BIGINT},
+        last_updated_by = #{record.lastUpdatedBy,jdbcType=BIGINT},
+        object_version_number = #{record.objectVersionNumber,jdbcType=BIGINT},
+        tenant_id = #{record.tenantId,jdbcType=BIGINT},
+        job_settings = #{record.jobSettings,jdbcType=LONGVARCHAR}
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByExample" parameterType="map">
+        update job_execution
+        set job_execution_id = #{record.jobExecutionId,jdbcType=BIGINT},
+        job_id = #{record.jobId,jdbcType=BIGINT},
+        execution_id = #{record.executionId,jdbcType=BIGINT},
+        execution_status = #{record.executionStatus,jdbcType=VARCHAR},
+        start_date = #{record.startDate,jdbcType=TIMESTAMP},
+        end_date = #{record.endDate,jdbcType=TIMESTAMP},
+        creation_date = #{record.creationDate,jdbcType=TIMESTAMP},
+        last_update_date = #{record.lastUpdateDate,jdbcType=TIMESTAMP},
+        created_by = #{record.createdBy,jdbcType=BIGINT},
+        last_updated_by = #{record.lastUpdatedBy,jdbcType=BIGINT},
+        object_version_number = #{record.objectVersionNumber,jdbcType=BIGINT},
+        tenant_id = #{record.tenantId,jdbcType=BIGINT}
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByPrimaryKeySelective" parameterType="com.hand.along.dispatch.common.domain.JobExecution">
+        update job_execution
+        <set>
+            <if test="jobId != null">
+                job_id = #{jobId,jdbcType=BIGINT},
+            </if>
+            <if test="executionId != null">
+                execution_id = #{executionId,jdbcType=BIGINT},
+            </if>
+            <if test="executionStatus != null">
+                execution_status = #{executionStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="startDate != null">
+                start_date = #{startDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endDate != null">
+                end_date = #{endDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="creationDate != null">
+                creation_date = #{creationDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="lastUpdateDate != null">
+                last_update_date = #{lastUpdateDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createdBy != null">
+                created_by = #{createdBy,jdbcType=BIGINT},
+            </if>
+            <if test="lastUpdatedBy != null">
+                last_updated_by = #{lastUpdatedBy,jdbcType=BIGINT},
+            </if>
+            <if test="objectVersionNumber != null">
+                object_version_number = #{objectVersionNumber,jdbcType=BIGINT},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId,jdbcType=BIGINT},
+            </if>
+            <if test="jobSettings != null">
+                job_settings = #{jobSettings,jdbcType=LONGVARCHAR},
+            </if>
+        </set>
+        where job_execution_id = #{jobExecutionId,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.hand.along.dispatch.common.domain.JobExecution">
+        update job_execution
+        set job_id = #{jobId,jdbcType=BIGINT},
+        execution_id = #{executionId,jdbcType=BIGINT},
+        execution_status = #{executionStatus,jdbcType=VARCHAR},
+        start_date = #{startDate,jdbcType=TIMESTAMP},
+        end_date = #{endDate,jdbcType=TIMESTAMP},
+        creation_date = #{creationDate,jdbcType=TIMESTAMP},
+        last_update_date = #{lastUpdateDate,jdbcType=TIMESTAMP},
+        created_by = #{createdBy,jdbcType=BIGINT},
+        last_updated_by = #{lastUpdatedBy,jdbcType=BIGINT},
+        object_version_number = #{objectVersionNumber,jdbcType=BIGINT},
+        tenant_id = #{tenantId,jdbcType=BIGINT},
+        job_settings = #{jobSettings,jdbcType=LONGVARCHAR}
+        where job_execution_id = #{jobExecutionId,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.hand.along.dispatch.common.domain.JobExecution">
+        update job_execution
+        set job_id = #{jobId,jdbcType=INTEGER},
+        execution_id = #{executionId,jdbcType=BIGINT},
+        execution_status = #{executionStatus,jdbcType=VARCHAR},
+        start_date = #{startDate,jdbcType=TIMESTAMP},
+        end_date = #{endDate,jdbcType=TIMESTAMP},
+        creation_date = #{creationDate,jdbcType=TIMESTAMP},
+        last_update_date = #{lastUpdateDate,jdbcType=TIMESTAMP},
+        created_by = #{createdBy,jdbcType=BIGINT},
+        last_updated_by = #{lastUpdatedBy,jdbcType=BIGINT},
+        object_version_number = #{objectVersionNumber,jdbcType=BIGINT},
+        tenant_id = #{tenantId,jdbcType=BIGINT}
+        where job_execution_id = #{jobExecutionId,jdbcType=BIGINT}
+    </update>
+</mapper>

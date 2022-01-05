@@ -1,0 +1,88 @@
+server:
+  port: 7788
+  undertow:
+    threads:
+      # 设置IO线程数, 它主要执行非阻塞的任务,它们会负责多个连接
+      # 默认值为8，建议设置每个CPU核心一个线程
+      io: ${SERVER_UNDERTOW_IO_THREADS:4}
+      # 阻塞任务线程池, 当执行类似servlet请求阻塞操作, undertow会从这个线程池中取得线程
+      # 默认等于 io-threads*8，它的值设置取决于系统的负载，可适当调大该值
+      worker: ${SERVER_UNDERTOW_WORKER_THREADS:128}
+    # 每块buffer的空间大小，越小空间被利用越充分
+    # 不要设置太大，以免影响其他应用，合适即可
+    buffer-size: ${SERVER_UNDERTOW_BUFFER_SIZE:1024}
+    # 是否分配的直接内存(NIO直接分配的堆外内存)
+    # 默认false
+    direct-buffers: true
+    # HTTP POST请求最大的大小
+    # 默认0，无限制，可设置10M
+    max-http-post-size: 10485760
+    allow-unescaped-characters-in-url: true
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/dispatch?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: root
+    password: root
+    driver-class-name: com.mysql.jdbc.Driver
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 1
+    password:
+    lettuce:
+      pool:
+        # 资源池中最大连接数
+        # 默认8，-1表示无限制；可根据服务并发redis情况及服务端的支持上限调整
+        max-active: 50
+        # 资源池运行最大空闲的连接数
+        # 默认8，-1表示无限制；可根据服务并发redis情况及服务端的支持上限调整，一般建议和max-active保持一致，避免资源伸缩带来的开销
+        max-idle: 50
+        # 当资源池连接用尽后，调用者的最大等待时间(单位为毫秒)
+        # 默认 -1 表示永不超时，设置5秒
+        max-wait: 5000
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: always
+    properties:
+      org:
+        quartz:
+          scheduler:
+            #在集群中每个实例都必须有一个唯一的instanceId，但是应该有一个相同的instanceName
+            instanceId: AUTO
+            instanceName: um-scheduler
+            skipUpdateCheck: true #是否跳过Quartz版本更新检查。如果检查并且找到更新，则会在Quartz的日志中报告它。生产部署要禁止
+          jobStore:
+            acquireTriggersWithinLock: true #获取trigger的时候是否上锁，默认false采用乐观锁，但有可能出现ABA导致重复调度
+            #此存储机制用于Quartz独立于应用容器的事务管理，如果是Tomcat容器管理的数据源，那我们定义的事物也不会传播给Quartz框架内部。
+            #通俗的讲就是不管我们的Service服务本身业务代码是否执行成功，只要代码中调用了Quartz API的数据库操作，那任务状态就永久持久化了，
+            #就算业务代码抛出运行时异常任务状态也不会回滚到之前的状态。与之相反的是JobStoreCMT。
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate #JDBC代理类
+            useProperties: true #让JDBCJobStore将JobDataMaps中的所有值都作为字符串，因此可以作为键值对存储而不是在BLOB列中以其序列化形式存储，从而避免序列化的版本问题
+            tablePrefix: qrtz_ #数据库表前缀
+            misfireThreshold: 60_000 #超过这个时间还未触发的trigger，就被认为发生了misfire，默认60s。job成功触发叫fire，misfire就是未成功触发。
+            isClustered: true #是否开启群集，集群模式需要在多台服务器上做时间同步或者使用zookeeper去解决
+            clusterCheckinInterval: 20_000 #定义了Scheduler实例检入到数据库中的频率(单位：毫秒)。
+          threadPool:
+            class: org.quartz.simpl.SimpleThreadPool #SimpleThreadPool这个线程池只是简单地在它的池中保持固定数量的线程，不增长也不缩小。但是它非常健壮且经过良好的测试，差不多每个Quartz用户都使用这个池
+            threadCount: 10 #最大线程数，意味着最多有多少个job可以同时执行
+            threadPriority: 5 #线程优先级
+            threadsInheritContextClassLoaderOfInitializingThread: true #线程上下文类加载器是否继承自初始线程的加载器
+          startup-delay: 60 #延时启动，要有足够长的时间让你的应用先启动完成后再让Scheduler启动（单位秒）
+          overwrite-existing-jobs: false #是否每次系统运行都会清空数据库中的Job信息，重新进行初始化
+netty:
+  server:
+    port: 31020
+    ip-pattern:
+    expire: 10
+
+alert:
+  type: mail
+
+mybatis:
+  mapperLocations: classpath*:/mapper/*.xml
+  configuration:
+    mapUnderscoreToCamelCase: true
+
+
