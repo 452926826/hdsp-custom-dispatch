@@ -7,23 +7,19 @@ import com.google.common.graph.MutableGraph;
 import com.hand.along.dispatch.common.constants.CommonConstant;
 import com.hand.along.dispatch.common.domain.JobExecution;
 import com.hand.along.dispatch.common.domain.JobNode;
+import com.hand.along.dispatch.common.domain.WorkflowExecution;
 import com.hand.along.dispatch.common.exceptions.CommonException;
+import com.hand.along.dispatch.common.infra.mapper.JobMapper;
+import com.hand.along.dispatch.common.utils.JSON;
 import com.hand.along.dispatch.master.app.service.BaseStatusService;
 import com.hand.along.dispatch.master.domain.*;
-import com.hand.along.dispatch.common.infra.mapper.JobMapper;
-import com.hand.along.dispatch.common.utils.CustomThreadPool;
-import com.hand.along.dispatch.common.utils.JSON;
-import com.hand.along.dispatch.common.domain.ExecutorInfo;
-import com.hand.along.dispatch.master.infra.mapper.WorkflowExecutionMapper;
+import com.hand.along.dispatch.common.infra.mapper.WorkflowExecutionMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 @Component
@@ -32,8 +28,6 @@ public class GraphUtil {
     private final JobMapper jobMapper;
     private final WorkflowExecutionMapper workflowExecutionMapper;
     private final BaseStatusService baseStatusService;
-    private static final ThreadPoolExecutor EXECUTOR = CustomThreadPool.getExecutor();
-    private static final Map<Long, Future<?>> FUTURES = new ConcurrentHashMap<>();
 
     public GraphUtil(JobMapper jobMapper,
                      WorkflowExecutionMapper workflowExecutionMapper,
@@ -49,17 +43,20 @@ public class GraphUtil {
      * @param graph             图形
      * @param workflow          任务流
      * @param workflowExecution 任务流执行记录
+     * @param sourceList        源节点列表
+     * @param targetList        目标节点列表
      * @param jobExecutionList  任务执行记录(理论上只有master重新选举时，重载所有的未完成的数据才会有值)
+     * @return 节点临时map
      */
-    public void parseGraph(String graph, Workflow workflow,
-                           WorkflowExecution workflowExecution,
-                           List<JobExecution> jobExecutionList) {
+    public Map<String, JobNode> parseGraph(String graph, Workflow workflow,
+                                           WorkflowExecution workflowExecution,
+                                           List<String> sourceList,
+                                           List<String> targetList,
+                                           List<JobExecution> jobExecutionList) {
         try {
             log.info("开始解析任务流图形");
             workflowExecution.info("开始解析任务流图形");
             WorkflowGraph workflowGraph = JSON.toObj(graph, WorkflowGraph.class);
-            final List<String> sourceList = new ArrayList<>();
-            final List<String> targetList = new ArrayList<>();
             Map<String, JobNode> tmpNodeMap = initGraph(workflowGraph, workflow, sourceList, targetList, jobExecutionList);
             log.info("解析任务流图形完毕");
             workflowExecution.info("解析任务流图形完毕");
@@ -69,8 +66,7 @@ public class GraphUtil {
             log.info("设置每个节点状态");
             workflowExecution.info("设置每个节点状态");
             skipNode(workflow.getGraphObj(), tmpNodeMap);
-            // 提交任务流
-            this.submitWorkflow(workflow, tmpNodeMap, sourceList, workflowExecution);
+            return tmpNodeMap;
         } catch (Exception e) {
             log.error("提交任务流失败");
             workflowExecution.error(e, "提交任务流");
@@ -197,13 +193,15 @@ public class GraphUtil {
      */
     private void processJob(List<WorkflowNode> nodes, Map<String, JobNode> tmpNodeMap, Workflow workflow, List<JobExecution> jobExecutionList) {
         log.info("解析node");
+        // 已经执行过的任务
         Map<String, JobExecution> executionMap = jobExecutionList.stream().collect(Collectors.toMap(JobExecution::getGraphId, i -> i));
         nodes.forEach(n -> {
             final String id = n.getId();
+            String nodeType = n.getNodeType();
             JobNode jobNode = JobNode.builder()
                     .id(id)
                     .workflowId(workflow.getWorkflowId())
-                    .nodeType(n.getNodeType())
+                    .nodeType(nodeType)
                     .objectId(n.getObjectId())
                     .uniqueId(String.format("%s_%s", workflow.getWorkflowId(), id))
                     .jobType(n.getJobType())
@@ -211,11 +209,20 @@ public class GraphUtil {
                     .status(executionMap.containsKey(id) ? executionMap.get(id).getExecutionStatus() : StringUtils.EMPTY)
                     .priorityLevel(StringUtils.isEmpty(n.getPriorityLevel()) ? "NORMAL" : n.getPriorityLevel())
                     .build();
+            if (CommonConstant.NodeType.WORKFLOW.name().equals(nodeType)) {
+                jobNode.setJobType("sub-workflow");
+            }
             jobNode.setMessageType(CommonConstant.JOB);
             tmpNodeMap.put(id, jobNode);
         });
     }
 
+    /**
+     * 初始化图形
+     *
+     * @param pairs    节点连线关系
+     * @param workflow 任务流
+     */
     public static void initGraph(List<EndpointPair<JobNode>> pairs, Workflow workflow) {
         log.info("初始化guava有向有环图");
         MutableGraph<JobNode> graph = GraphBuilder.directed().allowsSelfLoops(true).build();
@@ -272,28 +279,5 @@ public class GraphUtil {
             }
         }
         return listNode;
-    }
-
-    public void submitWorkflow(Workflow workflow, Map<String, JobNode> tmpNodeMap, List<String> sourceList, WorkflowExecution workflowExecution) {
-        log.info("提交任务流");
-        workflowExecution.info("提交任务流");
-        final Future<?> future = EXECUTOR.submit(new WorkflowJob(workflow,
-                sourceList,
-                tmpNodeMap,
-                baseStatusService,
-                workflowExecution));
-        FUTURES.put(workflowExecution.getWorkflowExecutionId(), future);
-    }
-
-
-    public static ExecutorInfo getExecutorInfo() {
-        return ExecutorInfo.builder()
-                .activeCount(EXECUTOR.getActiveCount())
-                .completedTaskCount(EXECUTOR.getCompletedTaskCount())
-                .taskCount(EXECUTOR.getTaskCount())
-                .corePoolSize(EXECUTOR.getCorePoolSize())
-                .maximumPoolSize(EXECUTOR.getMaximumPoolSize())
-                .queueCount(EXECUTOR.getQueue().size())
-                .build();
     }
 }

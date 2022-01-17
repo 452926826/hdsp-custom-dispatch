@@ -1,9 +1,11 @@
 package com.hand.along.dispatch.slave.infra.jobs;
 
-import com.hand.along.dispatch.common.infra.job.AbstractJob;
 import com.hand.along.dispatch.common.infra.job.BaseJob;
+import com.hand.along.dispatch.slave.infra.jobs.process.AbstractProcessJob;
+import lombok.extern.slf4j.Slf4j;
 
-public class DataxJob extends AbstractJob {
+@Slf4j
+public class DataxJob extends AbstractProcessJob {
     private static final String JOB_TYPE = "datax";
 
     /**
@@ -11,23 +13,7 @@ public class DataxJob extends AbstractJob {
      */
     @Override
     public void handle() {
-
-    }
-
-    /**
-     * 处理之前
-     */
-    @Override
-    public void before() {
-
-    }
-
-    /**
-     * 处理之后
-     */
-    @Override
-    public void after() {
-
+      log.info("this is datax!");
     }
 
     @Override

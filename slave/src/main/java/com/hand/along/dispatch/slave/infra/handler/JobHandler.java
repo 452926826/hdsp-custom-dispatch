@@ -11,10 +11,9 @@ import com.hand.along.dispatch.slave.infra.netty.NettyClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -24,6 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Slf4j
 public class JobHandler {
     public static final ThreadPoolExecutor threadPoolExecutor = CustomThreadPool.getExecutor();
+    private static final Map<String,JobNode> activeSubWorkflow = new ConcurrentHashMap<>();
 
     /**
      * 提交任务
@@ -36,12 +36,9 @@ public class JobHandler {
         try {
             jobNode.setStartDate(CommonUtil.now());
             handler(jobNode);
-            // 直接完成
-            jobNode.setStatus(CommonConstant.ExecutionStatus.SUCCEEDED.name());
         } catch (Exception e) {
             log.error("任务执行失败", e);
             jobNode.setStatus(CommonConstant.ExecutionStatus.FAILED.name());
-        } finally {
             jobNode.setEndDate(CommonUtil.now());
             NettyClient.sendMessage(JSON.toJson(jobNode));
         }
@@ -56,7 +53,15 @@ public class JobHandler {
         log.info("处理：{}", jobNode.getId());
         Map<String, Object> params = new HashMap<>();
         params.put("id", jobNode.getUniqueId());
-        AbstractJob abstractJob = PluginUtil.newInstance(jobNode.getJobType(), params);
+        AbstractJob abstractJob = PluginUtil.newInstance(jobNode, params);
         threadPoolExecutor.execute(abstractJob);
+    }
+
+    public static void putSubWorkflow(JobNode jobNode){
+        activeSubWorkflow.put(jobNode.getUuid(), jobNode);
+    }
+
+    public static JobNode getSubWorkflow(String uuid){
+        return activeSubWorkflow.getOrDefault(uuid, null);
     }
 }

@@ -1,7 +1,5 @@
-package com.hand.along.dispatch.master.domain;
+package com.hand.along.dispatch.common.domain;
 
-import com.hand.along.dispatch.common.domain.BaseDomain;
-import com.hand.along.dispatch.common.domain.ExecutionLog;
 import com.hand.along.dispatch.common.utils.CommonUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

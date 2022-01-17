@@ -44,12 +44,14 @@ public class ConnectToMaster {
                             // 连接上server后会阻塞
                             nettyClient.start(split[0], Integer.valueOf(split[1]));
                         }else{
-                            log.info("选举出来的主节点就是当前节点，不做其他操作");
+                            if(log.isDebugEnabled()){
+                                log.debug("选举出来的主节点就是当前节点，不做其他操作");
+                            }
                         }
                     } else {
                         log.error("主节点没有选举出来，等待主节点选举");
-                        TimeUnit.SECONDS.sleep(5L);
                     }
+                    TimeUnit.SECONDS.sleep(5L);
                 } catch (Exception e) {
                     log.error("error", e);
                 }

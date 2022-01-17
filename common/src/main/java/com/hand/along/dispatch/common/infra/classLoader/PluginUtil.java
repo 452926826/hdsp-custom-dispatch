@@ -1,5 +1,6 @@
 package com.hand.along.dispatch.common.infra.classLoader;
 
+import com.hand.along.dispatch.common.domain.JobNode;
 import com.hand.along.dispatch.common.exceptions.CommonException;
 import com.hand.along.dispatch.common.infra.job.AbstractJob;
 import com.hand.along.dispatch.common.infra.job.BaseJob;
@@ -69,19 +70,21 @@ public class PluginUtil {
         }
     }
 
-    public static AbstractJob newInstance(String type, Map<String, Object> params) {
-        if (jobTypes.containsKey(type)) {
-            Class<? extends BaseJob> aClass = jobTypes.get(type);
+    public static AbstractJob newInstance(JobNode jobNode, Map<String, Object> params) {
+        String jobType = jobNode.getJobType();
+        if (jobTypes.containsKey(jobType)) {
+            Class<? extends BaseJob> aClass = jobTypes.get(jobType);
             try {
                 AbstractJob abstractJob = (AbstractJob) aClass.newInstance();
                 abstractJob.setParams(params);
+                abstractJob.setJobNode(jobNode);
                 return abstractJob;
             } catch (Exception e) {
                 log.error("初始化job异常", e);
                 throw new CommonException("初始化job异常");
             }
         } else {
-            throw new CommonException("没有找到对应类型的job：" + type);
+            throw new CommonException("没有找到对应类型的job：" + jobType);
         }
     }
 }

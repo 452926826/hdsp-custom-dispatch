@@ -1,21 +1,19 @@
 package com.hand.along.dispatch.master.app.service.impl;
 
 import com.hand.along.dispatch.common.constants.CommonConstant;
-import com.hand.along.dispatch.common.domain.ExecutionLog;
-import com.hand.along.dispatch.common.domain.ExecutionLogExample;
-import com.hand.along.dispatch.common.domain.JobExecution;
-import com.hand.along.dispatch.common.domain.JobExecutionExample;
+import com.hand.along.dispatch.common.domain.*;
+import com.hand.along.dispatch.common.exceptions.CommonException;
 import com.hand.along.dispatch.common.infra.mapper.ExecutionLogMapper;
 import com.hand.along.dispatch.common.infra.mapper.JobExecutionMapper;
 import com.hand.along.dispatch.common.utils.CommonUtil;
 import com.hand.along.dispatch.common.utils.JSON;
 import com.hand.along.dispatch.master.app.service.BaseStatusService;
+import com.hand.along.dispatch.master.app.service.ExecuteService;
 import com.hand.along.dispatch.master.app.service.WorkflowService;
 import com.hand.along.dispatch.master.domain.*;
-import com.hand.along.dispatch.common.exceptions.CommonException;
 import com.hand.along.dispatch.master.infra.election.ElectionConfiguration;
 import com.hand.along.dispatch.master.infra.handler.GraphUtil;
-import com.hand.along.dispatch.master.infra.mapper.WorkflowExecutionMapper;
+import com.hand.along.dispatch.common.infra.mapper.WorkflowExecutionMapper;
 import com.hand.along.dispatch.master.infra.mapper.WorkflowMapper;
 import com.hand.along.dispatch.master.infra.netty.client.NettyClient;
 import com.hand.along.dispatch.master.infra.quartz.QuartzHandler;
@@ -24,8 +22,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static com.hand.along.dispatch.common.constants.CommonConstant.EXECUTE_WORKFLOW;
 
@@ -39,6 +39,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     private final BaseStatusService baseStatusService;
     private final JobExecutionMapper jobExecutionMapper;
     private final QuartzHandler quartzHandler;
+    private final ExecuteService executeService;
 
     public WorkflowServiceImpl(WorkflowMapper workflowMapper,
                                ExecutionLogMapper executionLogMapper,
@@ -46,7 +47,8 @@ public class WorkflowServiceImpl implements WorkflowService {
                                WorkflowExecutionMapper workflowExecutionMapper,
                                BaseStatusService baseStatusService,
                                JobExecutionMapper jobExecutionMapper,
-                               QuartzHandler quartzHandler) {
+                               QuartzHandler quartzHandler,
+                               ExecuteService executeService) {
         this.workflowMapper = workflowMapper;
         this.executionLogMapper = executionLogMapper;
         this.graphUtil = graphUtil;
@@ -54,16 +56,16 @@ public class WorkflowServiceImpl implements WorkflowService {
         this.baseStatusService = baseStatusService;
         this.jobExecutionMapper = jobExecutionMapper;
         this.quartzHandler = quartzHandler;
+        this.executeService = executeService;
     }
 
     /**
      * 执行任务流
      *
      * @param workflow 任务流
-     * @return 返回执行记录
      */
     @Override
-    public void execute(Workflow workflow) {
+    public WorkflowExecution execute(Workflow workflow) {
         // 如果当前节点是主节点则直接执行
         if (ElectionConfiguration.isMaster) {
             String graph = workflow.getGraph();
@@ -84,12 +86,18 @@ public class WorkflowServiceImpl implements WorkflowService {
             executionLogMapper.insert(executionLog);
             // 关联的日志记录
             workflowExecution.setExecutionLog(executionLog);
-            graphUtil.parseGraph(graph, workflow, workflowExecution, Collections.EMPTY_LIST);
+            final List<String> sourceList = new ArrayList<>();
+            final List<String> targetList = new ArrayList<>();
+            Map<String, JobNode> tmpNodeMap = graphUtil.parseGraph(graph, workflow, workflowExecution,sourceList,targetList, Collections.EMPTY_LIST);
+            // 提交任务流
+            executeService.submitWorkflow(workflow, tmpNodeMap, sourceList, workflowExecution);
+            return workflowExecution;
         } else {
             //如果当前节点不是主节点则发送到主节点执行
             workflow.setMessageType(EXECUTE_WORKFLOW);
             NettyClient.sendMessage(JSON.toJson(workflow));
         }
+        return WorkflowExecution.builder().build();
     }
 
     /**
@@ -133,7 +141,11 @@ public class WorkflowServiceImpl implements WorkflowService {
                 JobExecutionExample jobExecutionExample = new JobExecutionExample();
                 jobExecutionExample.createCriteria().andExecutionIdEqualTo(e.getWorkflowExecutionId());
                 List<JobExecution> jobExecutionList = jobExecutionMapper.selectByExample(jobExecutionExample);
-                graphUtil.parseGraph(workflowGraph, workflow, e, jobExecutionList);
+                final List<String> sourceList = new ArrayList<>();
+                final List<String> targetList = new ArrayList<>();
+                Map<String, JobNode> tmpNodeMap = graphUtil.parseGraph(workflowGraph, workflow, e,sourceList,targetList, jobExecutionList);
+                // 提交任务流
+                executeService.submitWorkflow(workflow, tmpNodeMap, sourceList, e);
             } else {
                 log.warn("当前正在运行的执行记录找不到原始任务流！直接停掉");
                 e.warn("当前正在运行的执行记录找不到原始任务流！直接停掉");
@@ -153,6 +165,7 @@ public class WorkflowServiceImpl implements WorkflowService {
                 .workflowId(workflow.getWorkflowId())
                 .workflowName(workflow.getWorkflowName())
                 .workflowCode(workflow.getWorkflowCode())
+                // 等待传值
                 .cronExpression("0 0/5 * * * ? *")
                 .graph(workflow.getGraph())
                 .build());

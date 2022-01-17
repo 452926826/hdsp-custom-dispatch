@@ -6,6 +6,7 @@ import com.hand.along.dispatch.common.domain.ExecutorInfo;
 import com.hand.along.dispatch.common.domain.monitor.MasterMonitorInfo;
 import com.hand.along.dispatch.common.domain.monitor.SlaveMonitorInfo;
 import com.hand.along.dispatch.common.utils.JSON;
+import com.hand.along.dispatch.master.app.service.ExecuteService;
 import com.hand.along.dispatch.master.app.service.MonitorService;
 import com.hand.along.dispatch.master.infra.election.CurrentMasterService;
 import com.hand.along.dispatch.master.infra.election.ElectionConfiguration;
@@ -22,9 +23,12 @@ import java.util.Map;
 @Service
 public class MonitorServiceImpl implements MonitorService {
     private final CurrentMasterService currentMasterService;
+    private final ExecuteService executeService;
 
-    public MonitorServiceImpl(CurrentMasterService currentMasterService) {
+    public MonitorServiceImpl(CurrentMasterService currentMasterService,
+                              ExecuteService executeService) {
         this.currentMasterService = currentMasterService;
+        this.executeService = executeService;
     }
 
     @Override
@@ -43,7 +47,7 @@ public class MonitorServiceImpl implements MonitorService {
             BaseMessage baseMessage = new BaseMessage(CommonConstant.INFO);
             NettyServer.sendAll(JSON.toJson(baseMessage));
             masterMonitorInfoList.add(MasterMonitorInfo.builder()
-                    .executorInfoList(Collections.singletonList(GraphUtil.getExecutorInfo()))
+                    .executorInfoList(Collections.singletonList(executeService.getExecutorInfo()))
                     .ipAddr(currentUrl)
                     .master(true)
                     .standby(false)

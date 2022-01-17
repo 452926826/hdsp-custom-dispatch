@@ -1,9 +1,10 @@
-package com.hand.along.dispatch.master.infra.mapper;
+package com.hand.along.dispatch.common.infra.mapper;
 
-import com.hand.along.dispatch.master.domain.WorkflowExecution;
-import com.hand.along.dispatch.master.domain.WorkflowExecutionExample;
-import java.util.List;
+import com.hand.along.dispatch.common.domain.WorkflowExecution;
+import com.hand.along.dispatch.common.domain.WorkflowExecutionExample;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface WorkflowExecutionMapper {
     int countByExample(WorkflowExecutionExample example);

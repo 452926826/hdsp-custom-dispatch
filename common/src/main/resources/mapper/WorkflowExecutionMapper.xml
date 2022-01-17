@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.hand.along.dispatch.master.infra.mapper.WorkflowExecutionMapper" >
-  <resultMap id="BaseResultMap" type="com.hand.along.dispatch.master.domain.WorkflowExecution" >
+<mapper namespace="com.hand.along.dispatch.common.infra.mapper.WorkflowExecutionMapper" >
+  <resultMap id="BaseResultMap" type="com.hand.along.dispatch.common.domain.WorkflowExecution" >
     <id column="workflow_execution_id" property="workflowExecutionId" jdbcType="BIGINT" />
     <result column="workflow_id" property="workflowId" jdbcType="BIGINT" />
     <result column="execution_status" property="executionStatus" jdbcType="VARCHAR" />
@@ -14,7 +14,7 @@
     <result column="object_version_number" property="objectVersionNumber" jdbcType="BIGINT" />
     <result column="tenant_id" property="tenantId" jdbcType="BIGINT" />
   </resultMap>
-  <resultMap id="ResultMapWithBLOBs" type="com.hand.along.dispatch.master.domain.WorkflowExecution" extends="BaseResultMap" >
+  <resultMap id="ResultMapWithBLOBs" type="com.hand.along.dispatch.common.domain.WorkflowExecution" extends="BaseResultMap" >
     <result column="workflow_graph" property="workflowGraph" jdbcType="LONGVARCHAR" />
   </resultMap>
   <sql id="Example_Where_Clause" >
@@ -82,7 +82,7 @@
   <sql id="Blob_Column_List" >
     workflow_graph
   </sql>
-  <select id="selectByExampleWithBLOBs" resultMap="ResultMapWithBLOBs" parameterType="com.hand.along.dispatch.master.domain.WorkflowExecutionExample" >
+  <select id="selectByExampleWithBLOBs" resultMap="ResultMapWithBLOBs" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecutionExample" >
     select
     <if test="distinct" >
       distinct
@@ -99,7 +99,7 @@
       order by ${orderByClause}
     </if>
   </select>
-  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.hand.along.dispatch.master.domain.WorkflowExecutionExample" >
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecutionExample" >
     select
     <if test="distinct" >
       distinct
@@ -126,13 +126,13 @@
     delete from workflow_execution
     where workflow_execution_id = #{workflowExecutionId,jdbcType=BIGINT}
   </delete>
-  <delete id="deleteByExample" parameterType="com.hand.along.dispatch.master.domain.WorkflowExecutionExample" >
+  <delete id="deleteByExample" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecutionExample" >
     delete from workflow_execution
     <if test="_parameter != null" >
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.hand.along.dispatch.master.domain.WorkflowExecution" >
+  <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecution" >
     <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="workflowExecutionId">
       SELECT LAST_INSERT_ID()
     </selectKey>
@@ -147,7 +147,7 @@
       #{objectVersionNumber,jdbcType=BIGINT}, #{tenantId,jdbcType=BIGINT}, #{workflowGraph,jdbcType=LONGVARCHAR}
       )
   </insert>
-  <insert id="insertSelective" parameterType="com.hand.along.dispatch.master.domain.WorkflowExecution" >
+  <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecution" >
     <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="workflowExecutionId">
       SELECT LAST_INSERT_ID()
     </selectKey>
@@ -229,7 +229,7 @@
       </if>
     </trim>
   </insert>
-  <select id="countByExample" parameterType="com.hand.along.dispatch.master.domain.WorkflowExecutionExample" resultType="java.lang.Integer" >
+  <select id="countByExample" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecutionExample" resultType="java.lang.Integer" >
     select count(*) from workflow_execution
     <if test="_parameter != null" >
       <include refid="Example_Where_Clause" />
@@ -314,7 +314,7 @@
       <include refid="Update_By_Example_Where_Clause" />
     </if>
   </update>
-  <update id="updateByPrimaryKeySelective" parameterType="com.hand.along.dispatch.master.domain.WorkflowExecution" >
+  <update id="updateByPrimaryKeySelective" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecution" >
     update workflow_execution
     <set >
       <if test="workflowId != null" >
@@ -353,7 +353,7 @@
     </set>
     where workflow_execution_id = #{workflowExecutionId,jdbcType=BIGINT}
   </update>
-  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.hand.along.dispatch.master.domain.WorkflowExecution" >
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecution" >
     update workflow_execution
     set workflow_id = #{workflowId,jdbcType=BIGINT},
       execution_status = #{executionStatus,jdbcType=VARCHAR},
@@ -368,7 +368,7 @@
       workflow_graph = #{workflowGraph,jdbcType=LONGVARCHAR}
     where workflow_execution_id = #{workflowExecutionId,jdbcType=BIGINT}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.hand.along.dispatch.master.domain.WorkflowExecution" >
+  <update id="updateByPrimaryKey" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecution" >
     update workflow_execution
     set workflow_id = #{workflowId,jdbcType=BIGINT},
       execution_status = #{executionStatus,jdbcType=VARCHAR},

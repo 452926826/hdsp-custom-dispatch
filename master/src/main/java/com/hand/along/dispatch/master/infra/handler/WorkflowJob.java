@@ -7,7 +7,7 @@ import com.hand.along.dispatch.common.utils.JSON;
 import com.hand.along.dispatch.master.app.service.BaseStatusService;
 import com.hand.along.dispatch.common.domain.JobNode;
 import com.hand.along.dispatch.master.domain.Workflow;
-import com.hand.along.dispatch.master.domain.WorkflowExecution;
+import com.hand.along.dispatch.common.domain.WorkflowExecution;
 import com.hand.along.dispatch.master.infra.netty.NettyServer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;

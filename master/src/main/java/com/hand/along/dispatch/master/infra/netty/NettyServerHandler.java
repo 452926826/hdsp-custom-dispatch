@@ -8,8 +8,10 @@ import com.hand.along.dispatch.common.utils.ApplicationHelper;
 import com.hand.along.dispatch.common.utils.JSON;
 import com.hand.along.dispatch.master.app.service.WorkflowService;
 import com.hand.along.dispatch.master.domain.Workflow;
+import com.hand.along.dispatch.common.domain.WorkflowExecution;
 import com.hand.along.dispatch.master.infra.election.CurrentMasterService;
 import com.hand.along.dispatch.master.infra.handler.WorkflowJob;
+import com.hand.along.dispatch.master.infra.mapper.WorkflowMapper;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -28,6 +30,8 @@ import static com.hand.along.dispatch.master.infra.netty.NettyServer.channelGrou
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     public static final Map<String, ExecutorInfo> slaveExecutorInfoMap = new HashMap<>();
     private final WorkflowService workflowService = ApplicationHelper.getBean(WorkflowService.class);
+
+    private final WorkflowMapper workflowMapper = ApplicationHelper.getBean(WorkflowMapper.class);
 
     private final CurrentMasterService currentMasterService = ApplicationHelper.getBean(CurrentMasterService.class);
 
@@ -65,28 +69,44 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
      * @throws Exception 异常
      */
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        Channel channel = ctx.channel();
-        ConcurrentHashMap<String, JobNode> activeNodeMap = WorkflowJob.activeNodeMap;
-        String message = msg.toString();
-        log.info("服务器收到消息: {}", message);
-        BaseMessage tmp = JSON.toObj(message, BaseMessage.class);
-        if (CommonConstant.JOB.equals(tmp.getMessageType())) {
-            JobNode jobNode = JSON.fromJson(message, JobNode.class);
-            String uniqueId = jobNode.getUniqueId();
-            if (activeNodeMap.containsKey(uniqueId)) {
-                activeNodeMap.get(uniqueId).setStatus(jobNode.getStatus());
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        try {
+            Channel channel = ctx.channel();
+            ConcurrentHashMap<String, JobNode> activeNodeMap = WorkflowJob.activeNodeMap;
+            String message = msg.toString();
+            log.info("服务器收到消息: {}", message);
+            BaseMessage tmp = JSON.toObj(message, BaseMessage.class);
+            if (CommonConstant.JOB.equals(tmp.getMessageType())) {
+                // 执行的任务状态
+                JobNode jobNode = JSON.fromJson(message, JobNode.class);
+                String uniqueId = jobNode.getUniqueId();
+                if (activeNodeMap.containsKey(uniqueId)) {
+                    activeNodeMap.get(uniqueId).setStatus(jobNode.getStatus());
+                }
+            } else if (CommonConstant.INFO.equals(tmp.getMessageType())) {
+                // salve节点的线程池信息
+                slaveExecutorInfoMap.put(channel.remoteAddress().toString(), JSON.fromJson(message, ExecutorInfo.class));
+            } else if (CommonConstant.EXECUTE_WORKFLOW.equals(tmp.getMessageType())) {
+                // 其他master节点发送过来的执行任务流
+                Workflow workflow = JSON.fromJson(message, Workflow.class);
+                workflowService.execute(workflow);
+            } else if (CommonConstant.CRON_WORKFLOW.equals(tmp.getMessageType())) {
+                // 其他master节点发送过来的调度任务流
+                Workflow workflow = JSON.fromJson(message, Workflow.class);
+                workflowService.cron(workflow);
+            } else if (CommonConstant.STANDBY_INFO.equals(tmp.getMessageType())){
+                // 其他master节点发送过来的standby信息
+                currentMasterService.setStandby(message);
+            } else if (CommonConstant.EXECUTE_SUB_WORKFLOW.equals(tmp.getMessageType())){
+                // 执行子任务流
+                JobNode jobNode = JSON.fromJson(message, JobNode.class);
+                Workflow workflow = workflowMapper.selectByPrimaryKey(Long.valueOf(jobNode.getObjectId()));
+                WorkflowExecution workflowExecution = workflowService.execute(workflow);
+                jobNode.setExecutionId(workflowExecution.getWorkflowExecutionId());
+                channel.writeAndFlush(JSON.toJson(jobNode));
             }
-        } else if (CommonConstant.INFO.equals(tmp.getMessageType())) {
-            slaveExecutorInfoMap.put(channel.remoteAddress().toString(), JSON.fromJson(message, ExecutorInfo.class));
-        } else if (CommonConstant.EXECUTE_WORKFLOW.equals(tmp.getMessageType())) {
-            Workflow workflow = JSON.fromJson(message, Workflow.class);
-            workflowService.execute(workflow);
-        } else if (CommonConstant.CRON_WORKFLOW.equals(tmp.getMessageType())) {
-            Workflow workflow = JSON.fromJson(message, Workflow.class);
-            workflowService.cron(workflow);
-        } else if (CommonConstant.STANDBY_INFO.equals(tmp.getMessageType())){
-            currentMasterService.setStandby(message);
+        } catch (Exception e) {
+            log.error("错误：", e);
         }
 
     }

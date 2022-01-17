@@ -1,7 +1,7 @@
 package com.hand.along.dispatch.master.app.service;
 
 import com.hand.along.dispatch.master.domain.Workflow;
-import com.hand.along.dispatch.master.domain.WorkflowExecution;
+import com.hand.along.dispatch.common.domain.WorkflowExecution;
 
 public interface WorkflowService {
     /**
@@ -9,7 +9,7 @@ public interface WorkflowService {
      *
      * @param workflow 任务流
      */
-    void execute(Workflow workflow);
+    WorkflowExecution execute(Workflow workflow);
 
     /**
      * 加载未完成的任务流

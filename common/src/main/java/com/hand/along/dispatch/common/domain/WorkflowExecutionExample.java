@@ -1,4 +1,4 @@
-package com.hand.along.dispatch.master.domain;
+package com.hand.along.dispatch.common.domain;
 
 import java.util.ArrayList;
 import java.util.Date;

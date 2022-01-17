@@ -7,8 +7,8 @@ import com.hand.along.dispatch.common.domain.ExecutionLog;
 import com.hand.along.dispatch.common.infra.mapper.ExecutionLogMapper;
 import com.hand.along.dispatch.common.utils.CommonUtil;
 import com.hand.along.dispatch.master.app.service.BaseStatusService;
-import com.hand.along.dispatch.master.domain.WorkflowExecution;
-import com.hand.along.dispatch.master.infra.mapper.WorkflowExecutionMapper;
+import com.hand.along.dispatch.common.domain.WorkflowExecution;
+import com.hand.along.dispatch.common.infra.mapper.WorkflowExecutionMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 

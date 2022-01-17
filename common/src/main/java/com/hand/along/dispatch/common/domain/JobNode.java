@@ -68,6 +68,18 @@ public class JobNode extends BaseMessage{
     @Transient
     private Long workflowId;
 
+    /**
+     * 主要用于子任务流唯一标记
+     */
+    @Transient
+    private String uuid;
+
+    /**
+     * 当前执行ID
+     */
+    @Transient
+    private Long executionId;
+
 
     @Override
     public boolean equals(final Object o) {

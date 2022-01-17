@@ -3,12 +3,12 @@ package com.hand.along.dispatch.sql.plugin;
 import com.hand.along.dispatch.common.infra.job.AbstractJob;
 import com.hand.along.dispatch.common.infra.job.BaseJob;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
 @Slf4j
 public class SqlJob extends AbstractJob {
+    private static final String JOB_TYPE = "sql";
     /**
      * 处理详情
      * 成功不用管
@@ -39,5 +39,11 @@ public class SqlJob extends AbstractJob {
     @Override
     public BaseJob getInstance() {
         return new SqlJob();
+    }
+
+
+    @Override
+    public String getJobType() {
+        return JOB_TYPE;
     }
 }

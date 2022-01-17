@@ -1,6 +1,6 @@
 package com.hand.along.dispatch.master.app.service;
 
-import com.hand.along.dispatch.master.domain.WorkflowExecution;
+import com.hand.along.dispatch.common.domain.WorkflowExecution;
 
 public interface BaseStatusService {
     /**

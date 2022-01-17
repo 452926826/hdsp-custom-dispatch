@@ -54,6 +54,9 @@ public class NettyClientHandler extends ChannelInboundHandlerAdapter {
                     .build();
             executorInfo.setMessageType(CommonConstant.INFO);
             NettyClient.sendMessage(JSON.toJson(executorInfo));
+        }else if(CommonConstant.EXECUTE_SUB_WORKFLOW.equals(tmp.getMessageType())){
+            JobNode jobNode = JSON.toObj(message, JobNode.class);
+            JobHandler.putSubWorkflow(jobNode);
         }
     }
 

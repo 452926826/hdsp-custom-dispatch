@@ -5,8 +5,8 @@ import com.hand.along.dispatch.common.domain.monitor.MasterMonitorInfo;
 import com.hand.along.dispatch.common.utils.CustomThreadPool;
 import com.hand.along.dispatch.common.utils.JSON;
 import com.hand.along.dispatch.common.utils.RedisHelper;
+import com.hand.along.dispatch.master.app.service.ExecuteService;
 import com.hand.along.dispatch.master.app.service.WorkflowService;
-import com.hand.along.dispatch.master.infra.handler.GraphUtil;
 import com.hand.along.dispatch.master.infra.netty.client.NettyClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +28,7 @@ public class ElectionConfiguration {
     private final WorkflowService workflowService;
     private final RedisHelper redisHelper;
     private final CurrentMasterService currentMasterService;
+    private final ExecuteService executeService;
 
     private static final String MASTER_ELECTION_LOCK = "master_lock";
     private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = CustomThreadPool.getScheduledExecutor();
@@ -40,11 +41,13 @@ public class ElectionConfiguration {
     public ElectionConfiguration(RedisLockRegistry redisLockRegistry,
                                  WorkflowService workflowService,
                                  RedisHelper redisHelper,
-                                 CurrentMasterService currentMasterService) {
+                                 CurrentMasterService currentMasterService,
+                                 ExecuteService executeService) {
         this.redisLockRegistry = redisLockRegistry;
         this.workflowService = workflowService;
         this.redisHelper = redisHelper;
         this.currentMasterService = currentMasterService;
+        this.executeService = executeService;
     }
 
     @PostConstruct
@@ -70,7 +73,7 @@ public class ElectionConfiguration {
                                         .ipAddr(currentUrl)
                                         .master(false)
                                         .standby(true)
-                                        .executorInfoList(Collections.singletonList(GraphUtil.getExecutorInfo()))
+                                        .executorInfoList(Collections.singletonList(executeService.getExecutorInfo()))
                                         .build();
                                 monitorInfo.setMessageType(CommonConstant.STANDBY_INFO);
                                 NettyClient.sendMessage(JSON.toJson(monitorInfo));

@@ -8,6 +8,7 @@ public interface CommonConstant {
     public static final String JOB="JOB";
     public static final String INFO="INFO";
     public static final String EXECUTE_WORKFLOW="EXECUTE";
+    public static final String EXECUTE_SUB_WORKFLOW="EXECUTE_SUB";
     public static final String CRON_WORKFLOW="CRON";
     public static final String STANDBY_INFO="STANDBY";
     /**

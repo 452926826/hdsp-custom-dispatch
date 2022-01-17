@@ -1,9 +1,12 @@
 package com.hand.along.dispatch.common.infra.job;
 
+import com.hand.along.dispatch.common.domain.JobNode;
+
 import java.util.Map;
 
 public abstract class AbstractJob implements BaseJob {
     private Map<String,Object> params;
+    private JobNode jobNode;
 
     public AbstractJob() {
 
@@ -45,4 +48,11 @@ public abstract class AbstractJob implements BaseJob {
         this.params = params;
     }
 
+    public JobNode getJobNode() {
+        return jobNode;
+    }
+
+    public void setJobNode(JobNode jobNode) {
+        this.jobNode = jobNode;
+    }
 }
