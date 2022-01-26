@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Transient;
 
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -47,4 +49,16 @@ public class Workflow extends BaseDomain {
 
     @Transient
     private String messageType;
+
+    /**
+     * 存放连线条件
+     */
+    @Transient
+    private Map<String,String> conditionMap;
+
+    /**
+     * 存放任务流参数
+     */
+    @Transient
+    private Map<String,Object> paramMap;
 }

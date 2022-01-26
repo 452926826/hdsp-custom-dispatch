@@ -76,7 +76,7 @@ public class PluginUtil {
             Class<? extends BaseJob> aClass = jobTypes.get(jobType);
             try {
                 AbstractJob abstractJob = (AbstractJob) aClass.newInstance();
-                abstractJob.setParams(params);
+                abstractJob.setLocalParams(params);
                 abstractJob.setJobNode(jobNode);
                 return abstractJob;
             } catch (Exception e) {

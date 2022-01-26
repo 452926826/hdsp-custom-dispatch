@@ -7,7 +7,7 @@ import com.hand.along.dispatch.master.app.service.BaseStatusService;
 import com.hand.along.dispatch.master.app.service.ExecuteService;
 import com.hand.along.dispatch.master.domain.Workflow;
 import com.hand.along.dispatch.common.domain.WorkflowExecution;
-import com.hand.along.dispatch.master.infra.handler.WorkflowJob;
+import com.hand.along.dispatch.master.infra.handler.WorkflowTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +61,7 @@ public class ExecuteServiceImpl implements ExecuteService {
     public void submitWorkflow(Workflow workflow, Map<String, JobNode> tmpNodeMap, List<String> sourceList, WorkflowExecution workflowExecution) {
         log.info("提交任务流");
         workflowExecution.info("提交任务流");
-        final Future<?> future = EXECUTOR.submit(new WorkflowJob(workflow,
+        final Future<?> future = EXECUTOR.submit(new WorkflowTask(workflow,
                 sourceList,
                 tmpNodeMap,
                 baseStatusService,

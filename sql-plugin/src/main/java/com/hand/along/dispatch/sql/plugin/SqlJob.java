@@ -16,7 +16,7 @@ public class SqlJob extends AbstractJob {
      */
     @Override
     public void handle() {
-        Map<String, Object> params = getParams();
+        Map<String, Object> params = getLocalParams();
         log.info("参数为：{}", params.toString());
     }
 

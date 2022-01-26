@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.hand.along.dispatch.common.constants.CommonConstant.LINE_SEPARATOR;
+
 @Slf4j
 public class NettyClient {
     /**
@@ -58,7 +60,7 @@ public class NettyClient {
      * 处理缓存的消息
      */
     private void handlerCachedMessage() {
-        cachedMessage.forEach(m-> channel.writeAndFlush(m));
+        cachedMessage.forEach(m-> channel.writeAndFlush(m+LINE_SEPARATOR));
     }
 
     public static Channel getChannel() {
@@ -74,7 +76,7 @@ public class NettyClient {
         if (channel.isActive()) {
             // 当前连接是可用的
             log.warn("当前连接可用");
-            channel.writeAndFlush(message);
+            channel.writeAndFlush(message+LINE_SEPARATOR);
         } else {
             //如果此时主节点下线了 放到缓存队列
             log.warn("当前连接不可用，放入缓存队列中");

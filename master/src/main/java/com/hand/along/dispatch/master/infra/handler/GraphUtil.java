@@ -160,14 +160,23 @@ public class GraphUtil {
         Map<String, JobNode> tmpNodeMap = new HashMap<>(16);
         log.info("解析节点");
         processJob(nodes, tmpNodeMap, workflow, jobExecutionList);
+        // 存放连线上的条件
+        Map<String,String> conditionMap = new HashMap<>();
         // 遍历连线梳理关系
         for (WorkflowEdge edge : edges) {
+            String target = edge.getTarget();
+            String source = edge.getSource();
             EndpointPair<JobNode> pair =
-                    EndpointPair.ordered(tmpNodeMap.get(edge.getSource()), tmpNodeMap.get(edge.getTarget()));
+                    EndpointPair.ordered(tmpNodeMap.get(source), tmpNodeMap.get(target));
+            String condition = edge.getCondition();
+            if(StringUtils.isNotEmpty(condition)){
+                conditionMap.put(String.format(CommonConstant.FROM_AND_TO, source,target), condition);
+            }
             endpointList.add(pair);
-            sourceList.add(edge.getSource());
-            targetList.add(edge.getTarget());
+            sourceList.add(source);
+            targetList.add(target);
         }
+        workflow.setConditionMap(conditionMap);
         // 拿到所有节点ID
         List<String> allNodeId = new ArrayList<>(tmpNodeMap.keySet());
         allNodeId.removeAll(sourceList);
@@ -213,6 +222,10 @@ public class GraphUtil {
                 jobNode.setJobType("sub-workflow");
             }
             jobNode.setMessageType(CommonConstant.JOB);
+            // 把正在运行中的节点加入到active map中
+            if(executionMap.containsKey(id) && CommonConstant.ExecutionStatus.isRunning(executionMap.get(id).getExecutionStatus())){
+                WorkflowTask.activeNodeMap.put(jobNode.getUniqueId(), jobNode);
+            }
             tmpNodeMap.put(id, jobNode);
         });
     }

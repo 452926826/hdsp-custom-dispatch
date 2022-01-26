@@ -10,7 +10,7 @@ import com.hand.along.dispatch.master.app.service.WorkflowService;
 import com.hand.along.dispatch.master.domain.Workflow;
 import com.hand.along.dispatch.common.domain.WorkflowExecution;
 import com.hand.along.dispatch.master.infra.election.CurrentMasterService;
-import com.hand.along.dispatch.master.infra.handler.WorkflowJob;
+import com.hand.along.dispatch.master.infra.handler.WorkflowTask;
 import com.hand.along.dispatch.master.infra.mapper.WorkflowMapper;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -72,7 +72,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         try {
             Channel channel = ctx.channel();
-            ConcurrentHashMap<String, JobNode> activeNodeMap = WorkflowJob.activeNodeMap;
+            ConcurrentHashMap<String, JobNode> activeNodeMap = WorkflowTask.activeNodeMap;
             String message = msg.toString();
             log.info("服务器收到消息: {}", message);
             BaseMessage tmp = JSON.toObj(message, BaseMessage.class);
@@ -80,8 +80,14 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
                 // 执行的任务状态
                 JobNode jobNode = JSON.fromJson(message, JobNode.class);
                 String uniqueId = jobNode.getUniqueId();
+                Map<String, Object> paramMap = jobNode.getGlobalParamMap();
+                paramMap.put(String.format(CommonConstant.SUCCESS_FORMAT,jobNode.getId()),jobNode.getStatus());
                 if (activeNodeMap.containsKey(uniqueId)) {
-                    activeNodeMap.get(uniqueId).setStatus(jobNode.getStatus());
+                    JobNode node = activeNodeMap.get(uniqueId);
+                    node.setStatus(jobNode.getStatus());
+                    // 如果node有参数反馈则替换最新为最新的参数
+                    Map<String, Object> globalParamMap = node.getGlobalParamMap();
+                    globalParamMap.putAll(paramMap);
                 }
             } else if (CommonConstant.INFO.equals(tmp.getMessageType())) {
                 // salve节点的线程池信息

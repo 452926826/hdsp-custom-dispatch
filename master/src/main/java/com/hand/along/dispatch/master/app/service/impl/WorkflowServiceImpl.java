@@ -22,10 +22,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.hand.along.dispatch.common.constants.CommonConstant.EXECUTE_WORKFLOW;
 
@@ -72,10 +69,14 @@ public class WorkflowServiceImpl implements WorkflowService {
             if (StringUtils.isEmpty(graph)) {
                 throw new CommonException("任务流图形为空");
             }
+            // 全局参数
+            Map<String, Object> globalParamMap = new HashMap<>(16);
+            prepareGlobalParam(globalParamMap);
             WorkflowExecution workflowExecution = WorkflowExecution.builder()
                     .workflowId(workflow.getWorkflowId())
                     .startDate(CommonUtil.now())
                     .workflowGraph(graph)
+                    .executionParam(JSON.toJson(globalParamMap))
                     .executionStatus(CommonConstant.ExecutionStatus.READY.name())
                     .build();
             workflowExecutionMapper.insertSelective(workflowExecution);
@@ -84,11 +85,12 @@ public class WorkflowServiceImpl implements WorkflowService {
                     .executionType(CommonConstant.NodeType.WORKFLOW.name())
                     .build();
             executionLogMapper.insert(executionLog);
+            workflow.setParamMap(globalParamMap);
             // 关联的日志记录
             workflowExecution.setExecutionLog(executionLog);
             final List<String> sourceList = new ArrayList<>();
             final List<String> targetList = new ArrayList<>();
-            Map<String, JobNode> tmpNodeMap = graphUtil.parseGraph(graph, workflow, workflowExecution,sourceList,targetList, Collections.EMPTY_LIST);
+            Map<String, JobNode> tmpNodeMap = graphUtil.parseGraph(graph, workflow, workflowExecution, sourceList, targetList, Collections.EMPTY_LIST);
             // 提交任务流
             executeService.submitWorkflow(workflow, tmpNodeMap, sourceList, workflowExecution);
             return workflowExecution;
@@ -98,6 +100,15 @@ public class WorkflowServiceImpl implements WorkflowService {
             NettyClient.sendMessage(JSON.toJson(workflow));
         }
         return WorkflowExecution.builder().build();
+    }
+
+    /**
+     * 准备全局参数
+     *
+     * @param globalParamMap 全局参数
+     */
+    private void prepareGlobalParam(Map<String, Object> globalParamMap) {
+        globalParamMap.put(CommonConstant.GLOBALPARAM.G_CURRENT_DATE_TIME.getValue(),CommonUtil.formatNow());
     }
 
     /**
@@ -137,13 +148,17 @@ public class WorkflowServiceImpl implements WorkflowService {
                 // 使用任务流记录中的graph替换workflow中的graph
                 String workflowGraph = e.getWorkflowGraph();
                 workflow.setGraph(workflowGraph);
+                // 加载任务流执行参数
+                if (StringUtils.isNotEmpty(e.getExecutionParam())) {
+                    workflow.setParamMap((Map<String, Object>) JSON.toObj(e.getExecutionParam(), Map.class));
+                }
                 // 获取任务的历史记录
                 JobExecutionExample jobExecutionExample = new JobExecutionExample();
                 jobExecutionExample.createCriteria().andExecutionIdEqualTo(e.getWorkflowExecutionId());
                 List<JobExecution> jobExecutionList = jobExecutionMapper.selectByExample(jobExecutionExample);
                 final List<String> sourceList = new ArrayList<>();
                 final List<String> targetList = new ArrayList<>();
-                Map<String, JobNode> tmpNodeMap = graphUtil.parseGraph(workflowGraph, workflow, e,sourceList,targetList, jobExecutionList);
+                Map<String, JobNode> tmpNodeMap = graphUtil.parseGraph(workflowGraph, workflow, e, sourceList, targetList, jobExecutionList);
                 // 提交任务流
                 executeService.submitWorkflow(workflow, tmpNodeMap, sourceList, e);
             } else {

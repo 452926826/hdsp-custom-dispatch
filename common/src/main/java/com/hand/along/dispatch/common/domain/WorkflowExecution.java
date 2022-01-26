@@ -30,6 +30,8 @@ public class WorkflowExecution extends BaseDomain {
 
     private String workflowGraph;
 
+    private String executionParam;
+
     @Transient
     private List<String> logs;
 

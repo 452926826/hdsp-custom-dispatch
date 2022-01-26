@@ -5,7 +5,7 @@ import com.hand.along.dispatch.common.domain.JobNode;
 import java.util.Map;
 
 public abstract class AbstractJob implements BaseJob {
-    private Map<String,Object> params;
+    private Map<String,Object> localParams;
     private JobNode jobNode;
 
     public AbstractJob() {
@@ -40,12 +40,12 @@ public abstract class AbstractJob implements BaseJob {
 
     public abstract String getJobType();
 
-    public Map<String, Object> getParams() {
-        return params;
+    public Map<String, Object> getLocalParams() {
+        return localParams;
     }
 
-    public void setParams(Map<String, Object> params) {
-        this.params = params;
+    public void setLocalParams(Map<String, Object> params) {
+        this.localParams = params;
     }
 
     public JobNode getJobNode() {

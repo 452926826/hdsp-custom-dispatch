@@ -18,4 +18,5 @@ public class WorkflowEdge {
     private Integer targetAnchor;
     private String id;
     private Integer index;
+    private String condition;
 }

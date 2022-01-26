@@ -4,13 +4,18 @@ import com.hand.along.dispatch.common.constants.CommonConstant;
 import com.hand.along.dispatch.common.domain.JobNode;
 import com.hand.along.dispatch.common.infra.job.AbstractJob;
 import com.hand.along.dispatch.common.infra.job.BaseJob;
+import com.hand.along.dispatch.common.infra.mapper.JobMapper;
+import com.hand.along.dispatch.common.utils.ApplicationHelper;
 import com.hand.along.dispatch.common.utils.CommonUtil;
 import com.hand.along.dispatch.common.utils.JSON;
 import com.hand.along.dispatch.slave.infra.netty.NettyClient;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
+
 @Slf4j
 public abstract class AbstractProcessJob extends AbstractJob {
+    public static JobMapper jobMapper;
     /**
      * 处理详情
      */
@@ -22,7 +27,9 @@ public abstract class AbstractProcessJob extends AbstractJob {
      */
     @Override
     public void before() {
-
+        if(Objects.isNull(jobMapper)){
+            jobMapper = ApplicationHelper.getBean(JobMapper.class);
+        }
     }
 
     /**

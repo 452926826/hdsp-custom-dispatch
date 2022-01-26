@@ -4,6 +4,7 @@ import com.google.common.graph.Graph;
 import com.hand.along.dispatch.common.constants.CommonConstant;
 import com.hand.along.dispatch.common.utils.CommonUtil;
 import com.hand.along.dispatch.common.utils.JSON;
+import com.hand.along.dispatch.common.utils.VariableUtil;
 import com.hand.along.dispatch.master.app.service.BaseStatusService;
 import com.hand.along.dispatch.common.domain.JobNode;
 import com.hand.along.dispatch.master.domain.Workflow;
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class WorkflowJob implements Runnable {
+public class WorkflowTask implements Runnable {
     public static final ConcurrentHashMap<String, JobNode> activeNodeMap = new ConcurrentHashMap<>();
     private final Workflow workflow;
     private final List<String> sourceList;
@@ -31,7 +32,7 @@ public class WorkflowJob implements Runnable {
     private Boolean workflowFailed = false;
     private static final Long WAIT_TIME = 5L;
 
-    public WorkflowJob(Workflow workflow, List<String> sourceList, Map<String, JobNode> tmpNodeMap, BaseStatusService baseStatusService, WorkflowExecution workflowExecution) {
+    public WorkflowTask(Workflow workflow, List<String> sourceList, Map<String, JobNode> tmpNodeMap, BaseStatusService baseStatusService, WorkflowExecution workflowExecution) {
         this.workflow = workflow;
         this.sourceList = sourceList;
         this.tmpNodeMap = tmpNodeMap;
@@ -112,6 +113,7 @@ public class WorkflowJob implements Runnable {
      */
     private void processRunningNodeSet(Set<String> readyNodeSet, Set<JobNode> runningSet, Set<JobNode> finishedSet) {
         Set<JobNode> tmpSet = new HashSet<>();
+        Map<String, String> conditionMap = workflow.getConditionMap();
         if (CollectionUtils.isNotEmpty(runningSet)) {
             log.info("开始判断运行节点的状态");
             workflowExecution.info("开始判断运行节点的状态");
@@ -132,12 +134,22 @@ public class WorkflowJob implements Runnable {
                     workflowExecution.info("节点运行成功或者跳过：{}", id);
                     //taskExecution.addLog(String.format("节点运行成功或者跳过：%s", r.getNodeName()));
                     if (CollectionUtils.isNotEmpty(graph.nodes())) {
-                        // 获取当前节点的所有子节点
+                        // 获取当前节点的所有后置节点
                         Set<JobNode> successors = graph.successors(r);
                         if (CollectionUtils.isNotEmpty(successors)) {
                             final List<String> readyNodeList = successors
                                     .stream()
+                                    .filter(n->{
+                                        String fromTo = (String.format(CommonConstant.FROM_AND_TO, id,n.getId()));
+                                        if(conditionMap.containsKey(fromTo)){
+                                            String condition = conditionMap.get(fromTo);
+                                            String replaceVariable = VariableUtil.replaceVariable(condition, workflow.getParamMap());
+                                            return VariableUtil.eval(replaceVariable);
+                                        }
+                                        return true;
+                                    })
                                     .filter(n -> !CommonConstant.ExecutionStatus.isSkipped(n.getStatus()))
+                                    .peek(n->n.setStatus(CommonConstant.ExecutionStatus.READY.name()))
                                     .map(JobNode::getId)
                                     .collect(Collectors.toList());
                             readyNodeSet.addAll(readyNodeList);
@@ -210,10 +222,10 @@ public class WorkflowJob implements Runnable {
         workflowExecution.info("准备提交任务:{}", readyNode.getId());
         String status = readyNode.getStatus();
         String uniqueId = readyNode.getUniqueId();
-        // 需要跳过的节点直接完成
-        if (CommonConstant.ExecutionStatus.isSkipped(status)) {
-            log.info("任务状态为跳过");
-            workflowExecution.info("任务状态为跳过");
+        // 已经完成的节点直接完成
+        if (CommonConstant.ExecutionStatus.isFinished(status)) {
+            log.info("任务状态为:{}", status);
+            workflowExecution.info("任务状态为：{}", status);
             readyNodeSet.remove(readyNode.getId());
             runningSet.add(readyNode);
             return;
@@ -239,6 +251,8 @@ public class WorkflowJob implements Runnable {
             // 提交任务执行
             // 运行的set里面加上运行的节点
             readyNode.setSubmitDate(CommonUtil.now());
+            readyNode.setStartDate(null);
+            readyNode.setGlobalParamMap(workflow.getParamMap());
             readyNodeSet.remove(readyNode.getId());
             runningSet.add(readyNode);
             // 已经完成的set去掉运行的节点(主要是循环会出现这种情况)

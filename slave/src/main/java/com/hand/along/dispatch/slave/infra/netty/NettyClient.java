@@ -13,7 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
+
+import static com.hand.along.dispatch.common.constants.CommonConstant.LINE_SEPARATOR;
 
 @Slf4j
 public class NettyClient {
@@ -87,7 +88,7 @@ public class NettyClient {
         if (channel.isActive()) {
             // 当前连接是可用的
             log.warn("当前连接可用");
-            channel.writeAndFlush(message);
+            channel.writeAndFlush(message+LINE_SEPARATOR);
         } else {
             //如果此时master下线了怎么办
             log.warn("当前连接不可用，放入缓存队列中");

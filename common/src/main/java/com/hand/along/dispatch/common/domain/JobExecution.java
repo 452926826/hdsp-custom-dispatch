@@ -1,6 +1,5 @@
 package com.hand.along.dispatch.common.domain;
 
-import com.hand.along.dispatch.common.domain.BaseDomain;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,5 +27,7 @@ public class JobExecution extends BaseDomain {
     private Date endDate;
 
     private String jobSettings;
+
+    private String executionParam;
 
 }

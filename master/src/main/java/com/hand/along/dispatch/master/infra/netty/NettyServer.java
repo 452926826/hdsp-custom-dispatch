@@ -18,6 +18,8 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static com.hand.along.dispatch.common.constants.CommonConstant.LINE_SEPARATOR;
+
 @Slf4j
 public class NettyServer {
     //用于保存所有Channel对象
@@ -74,7 +76,7 @@ public class NettyServer {
     public static void sendFirst(String message) {
         if (CollectionUtils.isNotEmpty(channelGroup)) {
             Channel channel = channelGroup.stream().findFirst().get();
-            channel.writeAndFlush(message);
+            channel.writeAndFlush(message+LINE_SEPARATOR);
         } else {
             throw new CommonException("当前没有slave接入！");
         }
@@ -89,7 +91,7 @@ public class NettyServer {
         if (CollectionUtils.isNotEmpty(channelGroup)) {
             int i = new Random().nextInt(channelGroup.size());
             Channel channel = new ArrayList<>(channelGroup).get(i);
-            channel.writeAndFlush(message);
+            channel.writeAndFlush(message+LINE_SEPARATOR);
         } else {
             throw new CommonException("当前没有slave接入！");
         }
@@ -101,6 +103,6 @@ public class NettyServer {
      * @param message 消息
      */
     public static void sendAll(String message) {
-        channelGroup.writeAndFlush(message);
+        channelGroup.writeAndFlush(message+LINE_SEPARATOR);
     }
 }

@@ -3,10 +3,7 @@ package com.hand.along.dispatch.common.domain;
 import lombok.*;
 import org.springframework.data.annotation.Transient;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 任务流运行中的临时任务状态节点
@@ -79,6 +76,12 @@ public class JobNode extends BaseMessage{
      */
     @Transient
     private Long executionId;
+
+    /**
+     * 存放任务流参数
+     */
+    @Transient
+    private Map<String,Object> globalParamMap;
 
 
     @Override
