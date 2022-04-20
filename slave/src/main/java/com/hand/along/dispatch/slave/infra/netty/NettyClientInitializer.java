@@ -13,7 +13,7 @@ import io.netty.util.CharsetUtil;
 public class NettyClientInitializer extends ChannelInitializer<SocketChannel> {
     @Override
     protected void initChannel(SocketChannel socketChannel) throws Exception {
-        socketChannel.pipeline().addLast(new LineBasedFrameDecoder(2048));
+        socketChannel.pipeline().addLast(new LineBasedFrameDecoder(Integer.MAX_VALUE));
         socketChannel.pipeline().addLast(new StringDecoder(CharsetUtil.UTF_8));
         socketChannel.pipeline().addLast("encoder", new StringEncoder());
         socketChannel.pipeline().addLast(new NettyClientHandler());

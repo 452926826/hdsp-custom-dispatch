@@ -131,9 +131,6 @@
     </if>
   </delete>
   <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.ExecutionLog" >
-    <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="logId">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
     insert into execution_log (log_id, execution_id, execution_type, 
       creation_date, last_update_date, created_by, 
       last_updated_by, object_version_number, tenant_id, 
@@ -144,9 +141,6 @@
       #{executionLog,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.ExecutionLog" >
-    <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="logId">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
     insert into execution_log
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="logId != null" >

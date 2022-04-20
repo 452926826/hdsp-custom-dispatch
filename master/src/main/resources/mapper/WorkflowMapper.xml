@@ -7,9 +7,15 @@
     <result column="workflow_code" property="workflowCode" jdbcType="VARCHAR" />
     <result column="workflow_description" property="workflowDescription" jdbcType="VARCHAR" />
     <result column="priority_level" property="priorityLevel" jdbcType="VARCHAR" />
+    <result column="creation_date" property="creationDate" jdbcType="TIMESTAMP" />
+    <result column="last_update_date" property="lastUpdateDate" jdbcType="TIMESTAMP" />
+    <result column="created_by" property="createdBy" jdbcType="BIGINT" />
+    <result column="last_updated_by" property="lastUpdatedBy" jdbcType="BIGINT" />
+    <result column="object_version_number" property="objectVersionNumber" jdbcType="BIGINT" />
+    <result column="tenant_id" property="tenantId" jdbcType="BIGINT" />
   </resultMap>
   <resultMap id="ResultMapWithBLOBs" type="com.hand.along.dispatch.master.domain.Workflow" extends="BaseResultMap" >
-    <result column="graph" property="graph" jdbcType="LONGVARCHAR" />
+    <result column="graph" property="graph" jdbcType="LONGVARBINARY" />
   </resultMap>
   <sql id="Example_Where_Clause" >
     <where >
@@ -70,7 +76,9 @@
     </where>
   </sql>
   <sql id="Base_Column_List" >
-    workflow_id, workflow_name, workflow_code, workflow_description, priority_level
+    workflow_id, workflow_name, workflow_code, workflow_description, priority_level, 
+    creation_date, last_update_date, created_by, last_updated_by, object_version_number, 
+    tenant_id
   </sql>
   <sql id="Blob_Column_List" >
     graph
@@ -126,20 +134,18 @@
     </if>
   </delete>
   <insert id="insert" parameterType="com.hand.along.dispatch.master.domain.Workflow" >
-    <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="workflowId">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
     insert into workflow (workflow_id, workflow_name, workflow_code, 
-      workflow_description, priority_level, graph
+      workflow_description, priority_level, creation_date, 
+      last_update_date, created_by, last_updated_by, 
+      object_version_number, tenant_id, graph
       )
     values (#{workflowId,jdbcType=BIGINT}, #{workflowName,jdbcType=VARCHAR}, #{workflowCode,jdbcType=VARCHAR}, 
-      #{workflowDescription,jdbcType=VARCHAR}, #{priorityLevel,jdbcType=VARCHAR}, #{graph,jdbcType=LONGVARCHAR}
+      #{workflowDescription,jdbcType=VARCHAR}, #{priorityLevel,jdbcType=VARCHAR}, #{creationDate,jdbcType=TIMESTAMP}, 
+      #{lastUpdateDate,jdbcType=TIMESTAMP}, #{createdBy,jdbcType=BIGINT}, #{lastUpdatedBy,jdbcType=BIGINT}, 
+      #{objectVersionNumber,jdbcType=BIGINT}, #{tenantId,jdbcType=BIGINT}, #{graph,jdbcType=LONGVARBINARY}
       )
   </insert>
   <insert id="insertSelective" parameterType="com.hand.along.dispatch.master.domain.Workflow" >
-    <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="workflowId">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
     insert into workflow
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="workflowId != null" >
@@ -156,6 +162,24 @@
       </if>
       <if test="priorityLevel != null" >
         priority_level,
+      </if>
+      <if test="creationDate != null" >
+        creation_date,
+      </if>
+      <if test="lastUpdateDate != null" >
+        last_update_date,
+      </if>
+      <if test="createdBy != null" >
+        created_by,
+      </if>
+      <if test="lastUpdatedBy != null" >
+        last_updated_by,
+      </if>
+      <if test="objectVersionNumber != null" >
+        object_version_number,
+      </if>
+      <if test="tenantId != null" >
+        tenant_id,
       </if>
       <if test="graph != null" >
         graph,
@@ -177,8 +201,26 @@
       <if test="priorityLevel != null" >
         #{priorityLevel,jdbcType=VARCHAR},
       </if>
+      <if test="creationDate != null" >
+        #{creationDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastUpdateDate != null" >
+        #{lastUpdateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createdBy != null" >
+        #{createdBy,jdbcType=BIGINT},
+      </if>
+      <if test="lastUpdatedBy != null" >
+        #{lastUpdatedBy,jdbcType=BIGINT},
+      </if>
+      <if test="objectVersionNumber != null" >
+        #{objectVersionNumber,jdbcType=BIGINT},
+      </if>
+      <if test="tenantId != null" >
+        #{tenantId,jdbcType=BIGINT},
+      </if>
       <if test="graph != null" >
-        #{graph,jdbcType=LONGVARCHAR},
+        #{graph,jdbcType=LONGVARBINARY},
       </if>
     </trim>
   </insert>
@@ -206,8 +248,26 @@
       <if test="record.priorityLevel != null" >
         priority_level = #{record.priorityLevel,jdbcType=VARCHAR},
       </if>
+      <if test="record.creationDate != null" >
+        creation_date = #{record.creationDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.lastUpdateDate != null" >
+        last_update_date = #{record.lastUpdateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.createdBy != null" >
+        created_by = #{record.createdBy,jdbcType=BIGINT},
+      </if>
+      <if test="record.lastUpdatedBy != null" >
+        last_updated_by = #{record.lastUpdatedBy,jdbcType=BIGINT},
+      </if>
+      <if test="record.objectVersionNumber != null" >
+        object_version_number = #{record.objectVersionNumber,jdbcType=BIGINT},
+      </if>
+      <if test="record.tenantId != null" >
+        tenant_id = #{record.tenantId,jdbcType=BIGINT},
+      </if>
       <if test="record.graph != null" >
-        graph = #{record.graph,jdbcType=LONGVARCHAR},
+        graph = #{record.graph,jdbcType=LONGVARBINARY},
       </if>
     </set>
     <if test="_parameter != null" >
@@ -221,7 +281,13 @@
       workflow_code = #{record.workflowCode,jdbcType=VARCHAR},
       workflow_description = #{record.workflowDescription,jdbcType=VARCHAR},
       priority_level = #{record.priorityLevel,jdbcType=VARCHAR},
-      graph = #{record.graph,jdbcType=LONGVARCHAR}
+      creation_date = #{record.creationDate,jdbcType=TIMESTAMP},
+      last_update_date = #{record.lastUpdateDate,jdbcType=TIMESTAMP},
+      created_by = #{record.createdBy,jdbcType=BIGINT},
+      last_updated_by = #{record.lastUpdatedBy,jdbcType=BIGINT},
+      object_version_number = #{record.objectVersionNumber,jdbcType=BIGINT},
+      tenant_id = #{record.tenantId,jdbcType=BIGINT},
+      graph = #{record.graph,jdbcType=LONGVARBINARY}
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -232,7 +298,13 @@
       workflow_name = #{record.workflowName,jdbcType=VARCHAR},
       workflow_code = #{record.workflowCode,jdbcType=VARCHAR},
       workflow_description = #{record.workflowDescription,jdbcType=VARCHAR},
-      priority_level = #{record.priorityLevel,jdbcType=VARCHAR}
+      priority_level = #{record.priorityLevel,jdbcType=VARCHAR},
+      creation_date = #{record.creationDate,jdbcType=TIMESTAMP},
+      last_update_date = #{record.lastUpdateDate,jdbcType=TIMESTAMP},
+      created_by = #{record.createdBy,jdbcType=BIGINT},
+      last_updated_by = #{record.lastUpdatedBy,jdbcType=BIGINT},
+      object_version_number = #{record.objectVersionNumber,jdbcType=BIGINT},
+      tenant_id = #{record.tenantId,jdbcType=BIGINT}
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -252,8 +324,26 @@
       <if test="priorityLevel != null" >
         priority_level = #{priorityLevel,jdbcType=VARCHAR},
       </if>
+      <if test="creationDate != null" >
+        creation_date = #{creationDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastUpdateDate != null" >
+        last_update_date = #{lastUpdateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createdBy != null" >
+        created_by = #{createdBy,jdbcType=BIGINT},
+      </if>
+      <if test="lastUpdatedBy != null" >
+        last_updated_by = #{lastUpdatedBy,jdbcType=BIGINT},
+      </if>
+      <if test="objectVersionNumber != null" >
+        object_version_number = #{objectVersionNumber,jdbcType=BIGINT},
+      </if>
+      <if test="tenantId != null" >
+        tenant_id = #{tenantId,jdbcType=BIGINT},
+      </if>
       <if test="graph != null" >
-        graph = #{graph,jdbcType=LONGVARCHAR},
+        graph = #{graph,jdbcType=LONGVARBINARY},
       </if>
     </set>
     where workflow_id = #{workflowId,jdbcType=BIGINT}
@@ -264,7 +354,13 @@
       workflow_code = #{workflowCode,jdbcType=VARCHAR},
       workflow_description = #{workflowDescription,jdbcType=VARCHAR},
       priority_level = #{priorityLevel,jdbcType=VARCHAR},
-      graph = #{graph,jdbcType=LONGVARCHAR}
+      creation_date = #{creationDate,jdbcType=TIMESTAMP},
+      last_update_date = #{lastUpdateDate,jdbcType=TIMESTAMP},
+      created_by = #{createdBy,jdbcType=BIGINT},
+      last_updated_by = #{lastUpdatedBy,jdbcType=BIGINT},
+      object_version_number = #{objectVersionNumber,jdbcType=BIGINT},
+      tenant_id = #{tenantId,jdbcType=BIGINT},
+      graph = #{graph,jdbcType=LONGVARBINARY}
     where workflow_id = #{workflowId,jdbcType=BIGINT}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.hand.along.dispatch.master.domain.Workflow" >
@@ -272,7 +368,13 @@
     set workflow_name = #{workflowName,jdbcType=VARCHAR},
       workflow_code = #{workflowCode,jdbcType=VARCHAR},
       workflow_description = #{workflowDescription,jdbcType=VARCHAR},
-      priority_level = #{priorityLevel,jdbcType=VARCHAR}
+      priority_level = #{priorityLevel,jdbcType=VARCHAR},
+      creation_date = #{creationDate,jdbcType=TIMESTAMP},
+      last_update_date = #{lastUpdateDate,jdbcType=TIMESTAMP},
+      created_by = #{createdBy,jdbcType=BIGINT},
+      last_updated_by = #{lastUpdatedBy,jdbcType=BIGINT},
+      object_version_number = #{objectVersionNumber,jdbcType=BIGINT},
+      tenant_id = #{tenantId,jdbcType=BIGINT}
     where workflow_id = #{workflowId,jdbcType=BIGINT}
   </update>
 </mapper>

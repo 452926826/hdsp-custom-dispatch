@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -140,6 +142,17 @@ public class CommonUtil {
         matcher.appendTail(sb);
         String result = sb.toString();
         return result.startsWith("_") ? result.substring(1) : result;
+    }
+
+    public static Properties string2Properties(String content) {
+        Properties properties = new Properties();
+        try {
+            properties.load(new StringReader(content));
+        } catch (IOException e) {
+            log.error("转成properties失败", e);
+            throw new CommonException("转成properties失败", e);
+        }
+        return properties;
     }
 
 }

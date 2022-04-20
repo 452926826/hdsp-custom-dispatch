@@ -440,7 +440,78 @@ public class JobExample {
         }
 
         public Criteria andJobTypeNotBetween(String value1, String value2) {
-            addCriterion("job_type not between", value1, value2, "jobType");
+            addCriterion("job_content not between", value1, value2, "jobType");
+            return (Criteria) this;
+        }
+
+
+        public Criteria andJobContentIsNull() {
+            addCriterion("job_content is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentIsNotNull() {
+            addCriterion("job_content is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentEqualTo(String value) {
+            addCriterion("job_content =", value, "jobContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentNotEqualTo(String value) {
+            addCriterion("job_content <>", value, "jobContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentGreaterThan(String value) {
+            addCriterion("job_content >", value, "jobContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentGreaterThanOrEqualTo(String value) {
+            addCriterion("job_content >=", value, "jobContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentLessThan(String value) {
+            addCriterion("job_content <", value, "jobContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentLessThanOrEqualTo(String value) {
+            addCriterion("job_content <=", value, "jobContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentLike(String value) {
+            addCriterion("job_content like", value, "jobContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentNotLike(String value) {
+            addCriterion("job_content not like", value, "jobContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentIn(List<String> values) {
+            addCriterion("job_content in", values, "jobContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentNotIn(List<String> values) {
+            addCriterion("job_content not in", values, "jobContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentBetween(String value1, String value2) {
+            addCriterion("job_content between", value1, value2, "jobContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andJobContentNotBetween(String value1, String value2) {
+            addCriterion("job_content not between", value1, value2, "jobContent");
             return (Criteria) this;
         }
 

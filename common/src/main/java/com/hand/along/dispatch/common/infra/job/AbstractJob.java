@@ -1,16 +1,19 @@
 package com.hand.along.dispatch.common.infra.job;
 
 import com.hand.along.dispatch.common.domain.JobNode;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
+@Slf4j
 public abstract class AbstractJob implements BaseJob {
-    private Map<String,Object> localParams;
+    private Map<String, Object> localParams;
     private JobNode jobNode;
 
     public AbstractJob() {
 
     }
+
     /**
      * 执行
      */
@@ -39,6 +42,8 @@ public abstract class AbstractJob implements BaseJob {
     public abstract BaseJob getInstance();
 
     public abstract String getJobType();
+
+    public abstract void cancel();
 
     public Map<String, Object> getLocalParams() {
         return localParams;

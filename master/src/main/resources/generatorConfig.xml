@@ -23,19 +23,39 @@
         </javaTypeResolver>
 
         <!-- 实体类生成的位置 -->
-        <javaModelGenerator targetPackage="com.hand.along.dispatch.master.domain" targetProject="src/main/java">
+        <javaModelGenerator targetPackage="com.hand.along.dispatch.master.domain.back" targetProject="src/main/java">
             <property name="trimStrings" value="true"/>
         </javaModelGenerator>
 
         <!-- Mapper.xml 文件的位置 -->
-        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources">
+        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources/back">
         </sqlMapGenerator>
 
         <!-- Mapper 接口文件的位置 -->
-        <javaClientGenerator targetPackage="com.hand.along.dispatch.master.infra.mapper" targetProject="src/main/java" type="XMLMAPPER">
+        <javaClientGenerator targetPackage="com.hand.along.dispatch.master.infra.mapper.back" targetProject="src/main/java" type="XMLMAPPER">
         </javaClientGenerator>
 
         <!-- 要生成的表 tableName是数据库中的表名或视图名 domainObjectName是实体类名-->
+        <table tableName="execution_log" domainObjectName="ExecutionLog" enableSelectByExample="true" enableDeleteByExample="true" enableCountByExample="true" enableUpdateByExample="true" selectByExampleQueryId="true">
+            <property name="ignoreQualifiersAtRuntime" value="false"/>
+            <property name="useActualColumnNames" value="false"/>
+        </table>
+        <table tableName="job" domainObjectName="Job" enableSelectByExample="true" enableDeleteByExample="true" enableCountByExample="true" enableUpdateByExample="true" selectByExampleQueryId="true">
+            <property name="ignoreQualifiersAtRuntime" value="false"/>
+            <property name="useActualColumnNames" value="false"/>
+        </table>
+        <table tableName="job_execution" domainObjectName="JobExecution" enableSelectByExample="true" enableDeleteByExample="true" enableCountByExample="true" enableUpdateByExample="true" selectByExampleQueryId="true">
+            <property name="ignoreQualifiersAtRuntime" value="false"/>
+            <property name="useActualColumnNames" value="false"/>
+        </table>
+        <table tableName="workflow" domainObjectName="Workflow" enableSelectByExample="true" enableDeleteByExample="true" enableCountByExample="true" enableUpdateByExample="true" selectByExampleQueryId="true">
+            <property name="ignoreQualifiersAtRuntime" value="false"/>
+            <property name="useActualColumnNames" value="false"/>
+        </table>
+        <table tableName="workflow_execution" domainObjectName="WorkflowExecution" enableSelectByExample="true" enableDeleteByExample="true" enableCountByExample="true" enableUpdateByExample="true" selectByExampleQueryId="true">
+            <property name="ignoreQualifiersAtRuntime" value="false"/>
+            <property name="useActualColumnNames" value="false"/>
+        </table>
         <table tableName="workflow_schedule" domainObjectName="WorkflowSchedule" enableSelectByExample="true" enableDeleteByExample="true" enableCountByExample="true" enableUpdateByExample="true" selectByExampleQueryId="true">
             <property name="ignoreQualifiersAtRuntime" value="false"/>
             <property name="useActualColumnNames" value="false"/>

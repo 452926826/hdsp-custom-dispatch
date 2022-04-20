@@ -1,14 +1,10 @@
 package com.hand.along.dispatch.slave.infra.jobs;
 
-import com.hand.along.dispatch.common.constants.CommonConstant;
-import com.hand.along.dispatch.common.domain.Job;
 import com.hand.along.dispatch.common.domain.JobNode;
 import com.hand.along.dispatch.common.infra.job.BaseJob;
-import com.hand.along.dispatch.common.utils.CommonUtil;
 import com.hand.along.dispatch.common.utils.JSON;
 import com.hand.along.dispatch.common.utils.VariableUtil;
 import com.hand.along.dispatch.slave.infra.jobs.process.AbstractProcessJob;
-import com.hand.along.dispatch.slave.infra.netty.NettyClient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,24 +22,16 @@ public class SetVariableJob extends AbstractProcessJob {
      */
     @Override
     public void handle() {
+        log.info("this is set variable job!");
         JobNode jobNode = getJobNode();
-        try {
-            Map<String, Object> globalParamMap = jobNode.getGlobalParamMap();
-            Job setVariableJob = jobMapper.selectByPrimaryKey(Long.valueOf(jobNode.getObjectId()));
-            String jobSettings = setVariableJob.getJobSettings();
-            SetVariableSettings setVariableSettings = JSON.toObj(jobSettings, SetVariableSettings.class);
-            String variableValue = setVariableSettings.getVariableValue();
-            String replaceVariable = VariableUtil.replaceVariable(variableValue, globalParamMap);
-            String evalValue = VariableUtil.evalValue(replaceVariable);
-            globalParamMap.put(setVariableSettings.variableCode, evalValue);
-            jobNode.setGlobalParamMap(globalParamMap);
-            log.info("this is set variable job!");
-        } catch (Exception e) {
-            log.info("任务执行失败:{}", jobNode.getId());
-            jobNode.setStatus(CommonConstant.ExecutionStatus.FAILED.name());
-            jobNode.setEndDate(CommonUtil.now());
-            NettyClient.sendMessage(JSON.toJson(jobNode));
-        }
+        Map<String, Object> globalParamMap = jobNode.getGlobalParamMap();
+        String jobSettings = job.getJobSettings();
+        SetVariableSettings setVariableSettings = JSON.toObj(jobSettings, SetVariableSettings.class);
+        String variableValue = setVariableSettings.getVariableValue();
+        String replaceVariable = VariableUtil.replaceVariable(variableValue, globalParamMap);
+        String evalValue = VariableUtil.evalValue(replaceVariable);
+        globalParamMap.put(setVariableSettings.variableCode, evalValue);
+        jobNode.setGlobalParamMap(globalParamMap);
     }
 
     @Override

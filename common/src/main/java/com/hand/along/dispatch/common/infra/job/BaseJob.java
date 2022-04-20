@@ -10,4 +10,6 @@ public interface BaseJob extends Runnable {
     void run();
 
     String getJobType();
+
+    void cancel();
 }

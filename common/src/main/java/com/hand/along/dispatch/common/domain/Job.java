@@ -1,6 +1,5 @@
 package com.hand.along.dispatch.common.domain;
 
-import com.hand.along.dispatch.common.domain.BaseDomain;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,5 +23,7 @@ public class Job extends BaseDomain {
     private String priorityLevel;
 
     private String jobSettings;
+
+    private String jobContent;
 
 }

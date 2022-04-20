@@ -2,20 +2,18 @@ package com.hand.along.dispatch.slave.infra.jobs.process;
 
 import com.hand.along.dispatch.common.constants.CommonConstant;
 import com.hand.along.dispatch.common.domain.JobNode;
-import com.hand.along.dispatch.common.infra.job.AbstractJob;
-import com.hand.along.dispatch.common.infra.job.BaseJob;
-import com.hand.along.dispatch.common.infra.mapper.JobMapper;
-import com.hand.along.dispatch.common.utils.ApplicationHelper;
 import com.hand.along.dispatch.common.utils.CommonUtil;
 import com.hand.along.dispatch.common.utils.JSON;
 import com.hand.along.dispatch.slave.infra.netty.NettyClient;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Objects;
-
+/**
+ * 初始化几个mapper
+ */
 @Slf4j
-public abstract class AbstractProcessJob extends AbstractJob {
-    public static JobMapper jobMapper;
+public abstract class AbstractProcessJob extends AbstractCommonJob {
+
+
     /**
      * 处理详情
      */
@@ -23,17 +21,7 @@ public abstract class AbstractProcessJob extends AbstractJob {
     public abstract void handle();
 
     /**
-     * 处理之前
-     */
-    @Override
-    public void before() {
-        if(Objects.isNull(jobMapper)){
-            jobMapper = ApplicationHelper.getBean(JobMapper.class);
-        }
-    }
-
-    /**
-     * 处理之后
+     * 处理之后  所有步骤执行成功后 指定状态为SUCCESS
      */
     @Override
     public void after() {
@@ -42,11 +30,14 @@ public abstract class AbstractProcessJob extends AbstractJob {
         jobNode.setStatus(CommonConstant.ExecutionStatus.SUCCEEDED.name());
         jobNode.setEndDate(CommonUtil.now());
         NettyClient.sendMessage(JSON.toJson(jobNode));
+        jobExecution.setExecutionStatus(CommonConstant.ExecutionStatus.SUCCEEDED.name());
+        jobExecutionMapper.updateByPrimaryKey(jobExecution);
+        jobExecution.info("任务执行成功:{}", jobNode.getId());
+        updateJobLog();
     }
 
     @Override
-    public abstract BaseJob getInstance();
+    public void cancel() {
 
-    @Override
-    public abstract String getJobType();
+    }
 }

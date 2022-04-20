@@ -1,13 +1,13 @@
 package com.hand.along.dispatch.sql.plugin;
 
-import com.hand.along.dispatch.common.infra.job.AbstractJob;
 import com.hand.along.dispatch.common.infra.job.BaseJob;
+import com.hand.along.dispatch.slave.infra.jobs.process.AbstractCommonJob;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
 @Slf4j
-public class SqlJob extends AbstractJob {
+public class SqlJob extends AbstractCommonJob {
     private static final String JOB_TYPE = "sql";
     /**
      * 处理详情
@@ -45,5 +45,10 @@ public class SqlJob extends AbstractJob {
     @Override
     public String getJobType() {
         return JOB_TYPE;
+    }
+
+    @Override
+    public void cancel() {
+
     }
 }

@@ -8,9 +8,16 @@
     <result column="job_description" property="jobDescription" jdbcType="VARCHAR" />
     <result column="job_type" property="jobType" jdbcType="VARCHAR" />
     <result column="priority_level" property="priorityLevel" jdbcType="VARCHAR" />
+    <result column="creation_date" property="creationDate" jdbcType="TIMESTAMP" />
+    <result column="last_update_date" property="lastUpdateDate" jdbcType="TIMESTAMP" />
+    <result column="created_by" property="createdBy" jdbcType="BIGINT" />
+    <result column="last_updated_by" property="lastUpdatedBy" jdbcType="BIGINT" />
+    <result column="object_version_number" property="objectVersionNumber" jdbcType="BIGINT" />
+    <result column="tenant_id" property="tenantId" jdbcType="BIGINT" />
   </resultMap>
   <resultMap id="ResultMapWithBLOBs" type="com.hand.along.dispatch.common.domain.Job" extends="BaseResultMap" >
     <result column="job_settings" property="jobSettings" jdbcType="LONGVARCHAR" />
+    <result column="job_content" property="jobContent" jdbcType="LONGVARCHAR" />
   </resultMap>
   <sql id="Example_Where_Clause" >
     <where >
@@ -71,10 +78,11 @@
     </where>
   </sql>
   <sql id="Base_Column_List" >
-    job_id, job_name, job_code, job_description, job_type, priority_level
+    job_id, job_name, job_code, job_description, job_type, priority_level, creation_date, 
+    last_update_date, created_by, last_updated_by, object_version_number, tenant_id
   </sql>
   <sql id="Blob_Column_List" >
-    job_settings
+    job_settings, job_content
   </sql>
   <select id="selectByExampleWithBLOBs" resultMap="ResultMapWithBLOBs" parameterType="com.hand.along.dispatch.common.domain.JobExample" >
     select
@@ -127,20 +135,18 @@
     </if>
   </delete>
   <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.Job" >
-    <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="jobId">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
     insert into job (job_id, job_name, job_code, 
       job_description, job_type, priority_level, 
-      job_settings)
+      creation_date, last_update_date, created_by, 
+      last_updated_by, object_version_number, tenant_id, 
+      job_settings, job_content)
     values (#{jobId,jdbcType=BIGINT}, #{jobName,jdbcType=VARCHAR}, #{jobCode,jdbcType=VARCHAR}, 
       #{jobDescription,jdbcType=VARCHAR}, #{jobType,jdbcType=VARCHAR}, #{priorityLevel,jdbcType=VARCHAR}, 
-      #{jobSettings,jdbcType=LONGVARCHAR})
+      #{creationDate,jdbcType=TIMESTAMP}, #{lastUpdateDate,jdbcType=TIMESTAMP}, #{createdBy,jdbcType=BIGINT}, 
+      #{lastUpdatedBy,jdbcType=BIGINT}, #{objectVersionNumber,jdbcType=BIGINT}, #{tenantId,jdbcType=BIGINT}, 
+      #{jobSettings,jdbcType=LONGVARCHAR}, #{jobContent,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.Job" >
-    <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="jobId">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
     insert into job
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="jobId != null" >
@@ -161,8 +167,29 @@
       <if test="priorityLevel != null" >
         priority_level,
       </if>
+      <if test="creationDate != null" >
+        creation_date,
+      </if>
+      <if test="lastUpdateDate != null" >
+        last_update_date,
+      </if>
+      <if test="createdBy != null" >
+        created_by,
+      </if>
+      <if test="lastUpdatedBy != null" >
+        last_updated_by,
+      </if>
+      <if test="objectVersionNumber != null" >
+        object_version_number,
+      </if>
+      <if test="tenantId != null" >
+        tenant_id,
+      </if>
       <if test="jobSettings != null" >
         job_settings,
+      </if>
+      <if test="jobContent != null" >
+        job_content,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
@@ -184,8 +211,29 @@
       <if test="priorityLevel != null" >
         #{priorityLevel,jdbcType=VARCHAR},
       </if>
+      <if test="creationDate != null" >
+        #{creationDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastUpdateDate != null" >
+        #{lastUpdateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createdBy != null" >
+        #{createdBy,jdbcType=BIGINT},
+      </if>
+      <if test="lastUpdatedBy != null" >
+        #{lastUpdatedBy,jdbcType=BIGINT},
+      </if>
+      <if test="objectVersionNumber != null" >
+        #{objectVersionNumber,jdbcType=BIGINT},
+      </if>
+      <if test="tenantId != null" >
+        #{tenantId,jdbcType=BIGINT},
+      </if>
       <if test="jobSettings != null" >
         #{jobSettings,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="jobContent != null" >
+        #{jobContent,jdbcType=LONGVARCHAR},
       </if>
     </trim>
   </insert>
@@ -216,8 +264,29 @@
       <if test="record.priorityLevel != null" >
         priority_level = #{record.priorityLevel,jdbcType=VARCHAR},
       </if>
+      <if test="record.creationDate != null" >
+        creation_date = #{record.creationDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.lastUpdateDate != null" >
+        last_update_date = #{record.lastUpdateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.createdBy != null" >
+        created_by = #{record.createdBy,jdbcType=BIGINT},
+      </if>
+      <if test="record.lastUpdatedBy != null" >
+        last_updated_by = #{record.lastUpdatedBy,jdbcType=BIGINT},
+      </if>
+      <if test="record.objectVersionNumber != null" >
+        object_version_number = #{record.objectVersionNumber,jdbcType=BIGINT},
+      </if>
+      <if test="record.tenantId != null" >
+        tenant_id = #{record.tenantId,jdbcType=BIGINT},
+      </if>
       <if test="record.jobSettings != null" >
         job_settings = #{record.jobSettings,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="record.jobContent != null" >
+        job_content = #{record.jobContent,jdbcType=LONGVARCHAR},
       </if>
     </set>
     <if test="_parameter != null" >
@@ -232,7 +301,14 @@
       job_description = #{record.jobDescription,jdbcType=VARCHAR},
       job_type = #{record.jobType,jdbcType=VARCHAR},
       priority_level = #{record.priorityLevel,jdbcType=VARCHAR},
-      job_settings = #{record.jobSettings,jdbcType=LONGVARCHAR}
+      creation_date = #{record.creationDate,jdbcType=TIMESTAMP},
+      last_update_date = #{record.lastUpdateDate,jdbcType=TIMESTAMP},
+      created_by = #{record.createdBy,jdbcType=BIGINT},
+      last_updated_by = #{record.lastUpdatedBy,jdbcType=BIGINT},
+      object_version_number = #{record.objectVersionNumber,jdbcType=BIGINT},
+      tenant_id = #{record.tenantId,jdbcType=BIGINT},
+      job_settings = #{record.jobSettings,jdbcType=LONGVARCHAR},
+      job_content = #{record.jobContent,jdbcType=LONGVARCHAR}
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -244,7 +320,13 @@
       job_code = #{record.jobCode,jdbcType=VARCHAR},
       job_description = #{record.jobDescription,jdbcType=VARCHAR},
       job_type = #{record.jobType,jdbcType=VARCHAR},
-      priority_level = #{record.priorityLevel,jdbcType=VARCHAR}
+      priority_level = #{record.priorityLevel,jdbcType=VARCHAR},
+      creation_date = #{record.creationDate,jdbcType=TIMESTAMP},
+      last_update_date = #{record.lastUpdateDate,jdbcType=TIMESTAMP},
+      created_by = #{record.createdBy,jdbcType=BIGINT},
+      last_updated_by = #{record.lastUpdatedBy,jdbcType=BIGINT},
+      object_version_number = #{record.objectVersionNumber,jdbcType=BIGINT},
+      tenant_id = #{record.tenantId,jdbcType=BIGINT}
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -267,8 +349,29 @@
       <if test="priorityLevel != null" >
         priority_level = #{priorityLevel,jdbcType=VARCHAR},
       </if>
+      <if test="creationDate != null" >
+        creation_date = #{creationDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="lastUpdateDate != null" >
+        last_update_date = #{lastUpdateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createdBy != null" >
+        created_by = #{createdBy,jdbcType=BIGINT},
+      </if>
+      <if test="lastUpdatedBy != null" >
+        last_updated_by = #{lastUpdatedBy,jdbcType=BIGINT},
+      </if>
+      <if test="objectVersionNumber != null" >
+        object_version_number = #{objectVersionNumber,jdbcType=BIGINT},
+      </if>
+      <if test="tenantId != null" >
+        tenant_id = #{tenantId,jdbcType=BIGINT},
+      </if>
       <if test="jobSettings != null" >
         job_settings = #{jobSettings,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="jobContent != null" >
+        job_content = #{jobContent,jdbcType=LONGVARCHAR},
       </if>
     </set>
     where job_id = #{jobId,jdbcType=BIGINT}
@@ -280,7 +383,14 @@
       job_description = #{jobDescription,jdbcType=VARCHAR},
       job_type = #{jobType,jdbcType=VARCHAR},
       priority_level = #{priorityLevel,jdbcType=VARCHAR},
-      job_settings = #{jobSettings,jdbcType=LONGVARCHAR}
+      creation_date = #{creationDate,jdbcType=TIMESTAMP},
+      last_update_date = #{lastUpdateDate,jdbcType=TIMESTAMP},
+      created_by = #{createdBy,jdbcType=BIGINT},
+      last_updated_by = #{lastUpdatedBy,jdbcType=BIGINT},
+      object_version_number = #{objectVersionNumber,jdbcType=BIGINT},
+      tenant_id = #{tenantId,jdbcType=BIGINT},
+      job_settings = #{jobSettings,jdbcType=LONGVARCHAR},
+      job_content = #{jobContent,jdbcType=LONGVARCHAR}
     where job_id = #{jobId,jdbcType=BIGINT}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.hand.along.dispatch.common.domain.Job" >
@@ -289,7 +399,13 @@
       job_code = #{jobCode,jdbcType=VARCHAR},
       job_description = #{jobDescription,jdbcType=VARCHAR},
       job_type = #{jobType,jdbcType=VARCHAR},
-      priority_level = #{priorityLevel,jdbcType=VARCHAR}
+      priority_level = #{priorityLevel,jdbcType=VARCHAR},
+      creation_date = #{creationDate,jdbcType=TIMESTAMP},
+      last_update_date = #{lastUpdateDate,jdbcType=TIMESTAMP},
+      created_by = #{createdBy,jdbcType=BIGINT},
+      last_updated_by = #{lastUpdatedBy,jdbcType=BIGINT},
+      object_version_number = #{objectVersionNumber,jdbcType=BIGINT},
+      tenant_id = #{tenantId,jdbcType=BIGINT}
     where job_id = #{jobId,jdbcType=BIGINT}
   </update>
 </mapper>

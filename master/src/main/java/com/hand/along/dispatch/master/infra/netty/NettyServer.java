@@ -76,7 +76,7 @@ public class NettyServer {
     public static void sendFirst(String message) {
         if (CollectionUtils.isNotEmpty(channelGroup)) {
             Channel channel = channelGroup.stream().findFirst().get();
-            channel.writeAndFlush(message+LINE_SEPARATOR);
+            channel.writeAndFlush(message + LINE_SEPARATOR);
         } else {
             throw new CommonException("当前没有slave接入！");
         }
@@ -91,7 +91,7 @@ public class NettyServer {
         if (CollectionUtils.isNotEmpty(channelGroup)) {
             int i = new Random().nextInt(channelGroup.size());
             Channel channel = new ArrayList<>(channelGroup).get(i);
-            channel.writeAndFlush(message+LINE_SEPARATOR);
+            channel.writeAndFlush(message + LINE_SEPARATOR);
         } else {
             throw new CommonException("当前没有slave接入！");
         }
@@ -103,6 +103,6 @@ public class NettyServer {
      * @param message 消息
      */
     public static void sendAll(String message) {
-        channelGroup.writeAndFlush(message+LINE_SEPARATOR);
+        channelGroup.writeAndFlush(message + LINE_SEPARATOR);
     }
 }

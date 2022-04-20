@@ -16,6 +16,7 @@
   </resultMap>
   <resultMap id="ResultMapWithBLOBs" type="com.hand.along.dispatch.common.domain.WorkflowExecution" extends="BaseResultMap" >
     <result column="workflow_graph" property="workflowGraph" jdbcType="LONGVARCHAR" />
+    <result column="execution_param" property="executionParam" jdbcType="LONGVARCHAR" />
   </resultMap>
   <sql id="Example_Where_Clause" >
     <where >
@@ -80,7 +81,7 @@
     last_update_date, created_by, last_updated_by, object_version_number, tenant_id
   </sql>
   <sql id="Blob_Column_List" >
-    workflow_graph
+    workflow_graph, execution_param
   </sql>
   <select id="selectByExampleWithBLOBs" resultMap="ResultMapWithBLOBs" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecutionExample" >
     select
@@ -133,24 +134,18 @@
     </if>
   </delete>
   <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecution" >
-    <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="workflowExecutionId">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
     insert into workflow_execution (workflow_execution_id, workflow_id, execution_status, 
       start_date, end_date, creation_date, 
       last_update_date, created_by, last_updated_by, 
-      object_version_number, tenant_id, workflow_graph
-      )
+      object_version_number, tenant_id, workflow_graph, 
+      execution_param)
     values (#{workflowExecutionId,jdbcType=BIGINT}, #{workflowId,jdbcType=BIGINT}, #{executionStatus,jdbcType=VARCHAR}, 
       #{startDate,jdbcType=TIMESTAMP}, #{endDate,jdbcType=TIMESTAMP}, #{creationDate,jdbcType=TIMESTAMP}, 
       #{lastUpdateDate,jdbcType=TIMESTAMP}, #{createdBy,jdbcType=BIGINT}, #{lastUpdatedBy,jdbcType=BIGINT}, 
-      #{objectVersionNumber,jdbcType=BIGINT}, #{tenantId,jdbcType=BIGINT}, #{workflowGraph,jdbcType=LONGVARCHAR}
-      )
+      #{objectVersionNumber,jdbcType=BIGINT}, #{tenantId,jdbcType=BIGINT}, #{workflowGraph,jdbcType=LONGVARCHAR}, 
+      #{executionParam,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecution" >
-    <selectKey resultType="java.lang.Long" order="AFTER" keyProperty="workflowExecutionId">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
     insert into workflow_execution
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="workflowExecutionId != null" >
@@ -189,6 +184,9 @@
       <if test="workflowGraph != null" >
         workflow_graph,
       </if>
+      <if test="executionParam != null" >
+        execution_param,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
       <if test="workflowExecutionId != null" >
@@ -226,6 +224,9 @@
       </if>
       <if test="workflowGraph != null" >
         #{workflowGraph,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="executionParam != null" >
+        #{executionParam,jdbcType=LONGVARCHAR},
       </if>
     </trim>
   </insert>
@@ -274,6 +275,9 @@
       <if test="record.workflowGraph != null" >
         workflow_graph = #{record.workflowGraph,jdbcType=LONGVARCHAR},
       </if>
+      <if test="record.executionParam != null" >
+        execution_param = #{record.executionParam,jdbcType=LONGVARCHAR},
+      </if>
     </set>
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
@@ -292,7 +296,8 @@
       last_updated_by = #{record.lastUpdatedBy,jdbcType=BIGINT},
       object_version_number = #{record.objectVersionNumber,jdbcType=BIGINT},
       tenant_id = #{record.tenantId,jdbcType=BIGINT},
-      workflow_graph = #{record.workflowGraph,jdbcType=LONGVARCHAR}
+      workflow_graph = #{record.workflowGraph,jdbcType=LONGVARCHAR},
+      execution_param = #{record.executionParam,jdbcType=LONGVARCHAR}
     <if test="_parameter != null" >
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -350,6 +355,9 @@
       <if test="workflowGraph != null" >
         workflow_graph = #{workflowGraph,jdbcType=LONGVARCHAR},
       </if>
+      <if test="executionParam != null" >
+        execution_param = #{executionParam,jdbcType=LONGVARCHAR},
+      </if>
     </set>
     where workflow_execution_id = #{workflowExecutionId,jdbcType=BIGINT}
   </update>
@@ -365,7 +373,8 @@
       last_updated_by = #{lastUpdatedBy,jdbcType=BIGINT},
       object_version_number = #{objectVersionNumber,jdbcType=BIGINT},
       tenant_id = #{tenantId,jdbcType=BIGINT},
-      workflow_graph = #{workflowGraph,jdbcType=LONGVARCHAR}
+      workflow_graph = #{workflowGraph,jdbcType=LONGVARCHAR},
+      execution_param = #{executionParam,jdbcType=LONGVARCHAR}
     where workflow_execution_id = #{workflowExecutionId,jdbcType=BIGINT}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecution" >
