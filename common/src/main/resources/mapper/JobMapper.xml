@@ -134,24 +134,23 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.Job" >
-    insert into job (job_id, job_name, job_code, 
+  <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.Job"
+          useGeneratedKeys="true" keyProperty="jobId">
+    insert into job (job_name, job_code,
       job_description, job_type, priority_level, 
       creation_date, last_update_date, created_by, 
       last_updated_by, object_version_number, tenant_id, 
       job_settings, job_content)
-    values (#{jobId,jdbcType=BIGINT}, #{jobName,jdbcType=VARCHAR}, #{jobCode,jdbcType=VARCHAR}, 
+    values (#{jobName,jdbcType=VARCHAR}, #{jobCode,jdbcType=VARCHAR},
       #{jobDescription,jdbcType=VARCHAR}, #{jobType,jdbcType=VARCHAR}, #{priorityLevel,jdbcType=VARCHAR}, 
       #{creationDate,jdbcType=TIMESTAMP}, #{lastUpdateDate,jdbcType=TIMESTAMP}, #{createdBy,jdbcType=BIGINT}, 
       #{lastUpdatedBy,jdbcType=BIGINT}, #{objectVersionNumber,jdbcType=BIGINT}, #{tenantId,jdbcType=BIGINT}, 
       #{jobSettings,jdbcType=LONGVARCHAR}, #{jobContent,jdbcType=LONGVARCHAR})
   </insert>
-  <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.Job" >
+  <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.Job"
+          useGeneratedKeys="true" keyProperty="jobId">
     insert into job
     <trim prefix="(" suffix=")" suffixOverrides="," >
-      <if test="jobId != null" >
-        job_id,
-      </if>
       <if test="jobName != null" >
         job_name,
       </if>
@@ -193,9 +192,6 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
-      <if test="jobId != null" >
-        #{jobId,jdbcType=BIGINT},
-      </if>
       <if test="jobName != null" >
         #{jobName,jdbcType=VARCHAR},
       </if>

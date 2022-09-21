@@ -107,22 +107,21 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.hand.along.dispatch.master.domain.WorkflowSchedule" >
-    insert into workflow_schedule (schedule_id, workflow_id, workflow_name, 
+  <insert id="insert" parameterType="com.hand.along.dispatch.master.domain.WorkflowSchedule"
+          useGeneratedKeys="true" keyProperty="scheduleId">
+    insert into workflow_schedule (workflow_id, workflow_name,
       workflow_code, cron_expression, creation_date, 
       last_update_date, created_by, last_updated_by, 
       object_version_number, tenant_id)
-    values (#{scheduleId,jdbcType=BIGINT}, #{workflowId,jdbcType=BIGINT}, #{workflowName,jdbcType=VARCHAR}, 
+    values (#{workflowId,jdbcType=BIGINT}, #{workflowName,jdbcType=VARCHAR},
       #{workflowCode,jdbcType=VARCHAR}, #{cronExpression,jdbcType=VARCHAR}, #{creationDate,jdbcType=TIMESTAMP}, 
       #{lastUpdateDate,jdbcType=TIMESTAMP}, #{createdBy,jdbcType=BIGINT}, #{lastUpdatedBy,jdbcType=BIGINT}, 
       #{objectVersionNumber,jdbcType=BIGINT}, #{tenantId,jdbcType=BIGINT})
   </insert>
-  <insert id="insertSelective" parameterType="com.hand.along.dispatch.master.domain.WorkflowSchedule" >
+  <insert id="insertSelective" parameterType="com.hand.along.dispatch.master.domain.WorkflowSchedule"
+          useGeneratedKeys="true" keyProperty="scheduleId">
     insert into workflow_schedule
     <trim prefix="(" suffix=")" suffixOverrides="," >
-      <if test="scheduleId != null" >
-        schedule_id,
-      </if>
       <if test="workflowId != null" >
         workflow_id,
       </if>
@@ -155,9 +154,6 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
-      <if test="scheduleId != null" >
-        #{scheduleId,jdbcType=BIGINT},
-      </if>
       <if test="workflowId != null" >
         #{workflowId,jdbcType=BIGINT},
       </if>

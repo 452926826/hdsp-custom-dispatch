@@ -6,6 +6,7 @@ public interface CommonConstant {
      * 消息类型
      */
     public static final String JOB="JOB";
+    public static final String WORKFLOW="WORKFLOW";
     public static final String INFO="INFO";
     public static final String EXECUTE_WORKFLOW="EXECUTE";
     public static final String EXECUTE_SUB_WORKFLOW="EXECUTE_SUB";
@@ -17,6 +18,8 @@ public interface CommonConstant {
     public static final String FROM_AND_TO="%s-%s";
 
     public static final String LINE_SEPARATOR="\n";
+    public static final String ALERT_SUCCESS="SUCCESS";
+    public static final String ALERT_FAIL="FAIL";
     /**
      * 执行状态
      */

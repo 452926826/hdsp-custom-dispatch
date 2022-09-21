@@ -136,26 +136,25 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.JobExecution" >
-    insert into job_execution (job_execution_id, execution_id, graph_id, 
+  <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.JobExecution"
+          useGeneratedKeys="true" keyProperty="jobExecutionId">
+    insert into job_execution (execution_id, graph_id,
       job_id, execution_status, start_date, 
       end_date, creation_date, last_update_date, 
       created_by, last_updated_by, object_version_number, 
       tenant_id, job_settings, execution_param
       )
-    values (#{jobExecutionId,jdbcType=BIGINT}, #{executionId,jdbcType=BIGINT}, #{graphId,jdbcType=VARCHAR}, 
+    values (#{executionId,jdbcType=BIGINT}, #{graphId,jdbcType=VARCHAR},
       #{jobId,jdbcType=BIGINT}, #{executionStatus,jdbcType=VARCHAR}, #{startDate,jdbcType=TIMESTAMP}, 
       #{endDate,jdbcType=TIMESTAMP}, #{creationDate,jdbcType=TIMESTAMP}, #{lastUpdateDate,jdbcType=TIMESTAMP}, 
       #{createdBy,jdbcType=BIGINT}, #{lastUpdatedBy,jdbcType=BIGINT}, #{objectVersionNumber,jdbcType=BIGINT}, 
       #{tenantId,jdbcType=BIGINT}, #{jobSettings,jdbcType=LONGVARCHAR}, #{executionParam,jdbcType=LONGVARCHAR}
       )
   </insert>
-  <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.JobExecution" >
+  <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.JobExecution"
+          useGeneratedKeys="true" keyProperty="jobExecutionId">
     insert into job_execution
     <trim prefix="(" suffix=")" suffixOverrides="," >
-      <if test="jobExecutionId != null" >
-        job_execution_id,
-      </if>
       <if test="executionId != null" >
         execution_id,
       </if>

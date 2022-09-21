@@ -133,24 +133,23 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecution" >
-    insert into workflow_execution (workflow_execution_id, workflow_id, execution_status, 
+  <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecution"
+          useGeneratedKeys="true" keyProperty="workflowExecutionId">
+    insert into workflow_execution (workflow_id, execution_status,
       start_date, end_date, creation_date, 
       last_update_date, created_by, last_updated_by, 
       object_version_number, tenant_id, workflow_graph, 
       execution_param)
-    values (#{workflowExecutionId,jdbcType=BIGINT}, #{workflowId,jdbcType=BIGINT}, #{executionStatus,jdbcType=VARCHAR}, 
+    values (#{workflowId,jdbcType=BIGINT}, #{executionStatus,jdbcType=VARCHAR},
       #{startDate,jdbcType=TIMESTAMP}, #{endDate,jdbcType=TIMESTAMP}, #{creationDate,jdbcType=TIMESTAMP}, 
       #{lastUpdateDate,jdbcType=TIMESTAMP}, #{createdBy,jdbcType=BIGINT}, #{lastUpdatedBy,jdbcType=BIGINT}, 
       #{objectVersionNumber,jdbcType=BIGINT}, #{tenantId,jdbcType=BIGINT}, #{workflowGraph,jdbcType=LONGVARCHAR}, 
       #{executionParam,jdbcType=LONGVARCHAR})
   </insert>
-  <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecution" >
+  <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.WorkflowExecution"
+          useGeneratedKeys="true" keyProperty="workflowExecutionId">
     insert into workflow_execution
     <trim prefix="(" suffix=")" suffixOverrides="," >
-      <if test="workflowExecutionId != null" >
-        workflow_execution_id,
-      </if>
       <if test="workflowId != null" >
         workflow_id,
       </if>
@@ -189,9 +188,6 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
-      <if test="workflowExecutionId != null" >
-        #{workflowExecutionId,jdbcType=BIGINT},
-      </if>
       <if test="workflowId != null" >
         #{workflowId,jdbcType=BIGINT},
       </if>

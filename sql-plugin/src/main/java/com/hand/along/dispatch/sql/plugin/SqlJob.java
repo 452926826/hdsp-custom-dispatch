@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Slf4j
 public class SqlJob extends AbstractCommonJob {
-    private static final String JOB_TYPE = "sql";
+    private static final String JOB_TYPE = "sql1";
     /**
      * 处理详情
      * 成功不用管

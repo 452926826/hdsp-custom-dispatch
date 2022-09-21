@@ -1,5 +1,6 @@
 package com.hand.along.dispatch.slave.infra.jobs.process;
 
+import com.hand.along.dispatch.common.app.service.FileStoreService;
 import com.hand.along.dispatch.common.constants.CommonConstant;
 import com.hand.along.dispatch.common.domain.ExecutionLog;
 import com.hand.along.dispatch.common.domain.Job;
@@ -12,11 +13,15 @@ import com.hand.along.dispatch.common.infra.mapper.JobMapper;
 import com.hand.along.dispatch.common.utils.ApplicationHelper;
 import com.hand.along.dispatch.common.utils.CommonUtil;
 import com.hand.along.dispatch.common.utils.JSON;
+import com.hand.along.dispatch.common.utils.VariableUtil;
 import com.hand.along.dispatch.slave.infra.netty.NettyClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.boot.driver.app.service.DriverSessionService;
+import org.springframework.core.env.Environment;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -29,6 +34,9 @@ public abstract class AbstractCommonJob extends AbstractJob {
     public static ExecutionLogMapper executionLogMapper;
     public static Job job;
     public static JobExecution jobExecution;
+    public static FileStoreService fileStoreService;
+    public static DriverSessionService driverSessionService;
+    public static Environment environment;
 
     /**
      * 处理之前
@@ -44,6 +52,15 @@ public abstract class AbstractCommonJob extends AbstractJob {
         }
         if (Objects.isNull(executionLogMapper)) {
             executionLogMapper = ApplicationHelper.getBean(ExecutionLogMapper.class);
+        }
+        if (Objects.isNull(fileStoreService)) {
+            fileStoreService = ApplicationHelper.getBean(FileStoreService.class);
+        }
+        if (Objects.isNull(driverSessionService)) {
+            driverSessionService = ApplicationHelper.getBean(DriverSessionService.class);
+        }
+        if (Objects.isNull(environment)) {
+            environment = ApplicationHelper.getBean(Environment.class);
         }
         job = jobMapper.selectByPrimaryKey(Long.valueOf(jobNode.getObjectId()));
         jobExecution = JobExecution.builder()
@@ -62,6 +79,10 @@ public abstract class AbstractCommonJob extends AbstractJob {
                 .build();
         executionLogMapper.insert(executionLog);
         jobExecution.setExecutionLog(executionLog);
+    }
+
+    public String getTmpDataDir(){
+        return environment.getProperty("slave.tmp.dir", "data");
     }
 
     /**
@@ -93,5 +114,12 @@ public abstract class AbstractCommonJob extends AbstractJob {
         ExecutionLog executionLog = jobExecution.getExecutionLog();
         executionLog.setExecutionLog(String.format("%s\n%s", StringUtils.isEmpty(executionLog.getExecutionLog()) ? "" : executionLog.getExecutionLog(), StringUtils.join(logs, "\n")));
         executionLogMapper.updateByPrimaryKeyWithBLOBs(executionLog);
+    }
+
+    public String replaceJobVariable(String command){
+        JobNode jobNode = getJobNode();
+        Map<String, Object> localParams = this.getLocalParams();
+        Map<String, Object> globalParamMap = jobNode.getGlobalParamMap();
+        return VariableUtil.replaceVariable(VariableUtil.replaceVariable(command, globalParamMap), localParams);
     }
 }

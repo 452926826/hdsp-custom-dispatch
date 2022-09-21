@@ -24,8 +24,7 @@ public class WorkflowController {
     public ResponseEntity<?> runWorkflow(@PathVariable(name = "organizationId") Long tenantId,
                                          @RequestBody Workflow workflow) {
         workflow.setTenantId(tenantId);
-        workflowService.execute(workflow);
-        return ResponseEntity.ok(workflow);
+        return ResponseEntity.ok(workflowService.execute(workflow));
     }
 
     @PostMapping("/cron")

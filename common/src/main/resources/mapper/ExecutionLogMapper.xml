@@ -130,22 +130,21 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.ExecutionLog" >
-    insert into execution_log (log_id, execution_id, execution_type, 
+  <insert id="insert" parameterType="com.hand.along.dispatch.common.domain.ExecutionLog"
+          useGeneratedKeys="true" keyProperty="logId">
+    insert into execution_log (execution_id, execution_type,
       creation_date, last_update_date, created_by, 
       last_updated_by, object_version_number, tenant_id, 
       execution_log)
-    values (#{logId,jdbcType=BIGINT}, #{executionId,jdbcType=BIGINT}, #{executionType,jdbcType=VARCHAR}, 
+    values (#{executionId,jdbcType=BIGINT}, #{executionType,jdbcType=VARCHAR},
       #{creationDate,jdbcType=TIMESTAMP}, #{lastUpdateDate,jdbcType=TIMESTAMP}, #{createdBy,jdbcType=BIGINT}, 
       #{lastUpdatedBy,jdbcType=BIGINT}, #{objectVersionNumber,jdbcType=BIGINT}, #{tenantId,jdbcType=BIGINT}, 
       #{executionLog,jdbcType=LONGVARCHAR})
   </insert>
-  <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.ExecutionLog" >
+  <insert id="insertSelective" parameterType="com.hand.along.dispatch.common.domain.ExecutionLog"
+          useGeneratedKeys="true" keyProperty="logId">
     insert into execution_log
     <trim prefix="(" suffix=")" suffixOverrides="," >
-      <if test="logId != null" >
-        log_id,
-      </if>
       <if test="executionId != null" >
         execution_id,
       </if>
@@ -175,9 +174,6 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
-      <if test="logId != null" >
-        #{logId,jdbcType=BIGINT},
-      </if>
       <if test="executionId != null" >
         #{executionId,jdbcType=BIGINT},
       </if>

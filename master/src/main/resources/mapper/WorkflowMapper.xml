@@ -133,24 +133,23 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.hand.along.dispatch.master.domain.Workflow" >
-    insert into workflow (workflow_id, workflow_name, workflow_code, 
+  <insert id="insert" parameterType="com.hand.along.dispatch.master.domain.Workflow"
+          useGeneratedKeys="true" keyProperty="workflowId">
+    insert into workflow (workflow_name, workflow_code,
       workflow_description, priority_level, creation_date, 
       last_update_date, created_by, last_updated_by, 
       object_version_number, tenant_id, graph
       )
-    values (#{workflowId,jdbcType=BIGINT}, #{workflowName,jdbcType=VARCHAR}, #{workflowCode,jdbcType=VARCHAR}, 
+    values (#{workflowName,jdbcType=VARCHAR}, #{workflowCode,jdbcType=VARCHAR},
       #{workflowDescription,jdbcType=VARCHAR}, #{priorityLevel,jdbcType=VARCHAR}, #{creationDate,jdbcType=TIMESTAMP}, 
       #{lastUpdateDate,jdbcType=TIMESTAMP}, #{createdBy,jdbcType=BIGINT}, #{lastUpdatedBy,jdbcType=BIGINT}, 
       #{objectVersionNumber,jdbcType=BIGINT}, #{tenantId,jdbcType=BIGINT}, #{graph,jdbcType=LONGVARBINARY}
       )
   </insert>
-  <insert id="insertSelective" parameterType="com.hand.along.dispatch.master.domain.Workflow" >
+  <insert id="insertSelective" parameterType="com.hand.along.dispatch.master.domain.Workflow"
+          useGeneratedKeys="true" keyProperty="workflowId">
     insert into workflow
     <trim prefix="(" suffix=")" suffixOverrides="," >
-      <if test="workflowId != null" >
-        workflow_id,
-      </if>
       <if test="workflowName != null" >
         workflow_name,
       </if>
@@ -186,9 +185,6 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides="," >
-      <if test="workflowId != null" >
-        #{workflowId,jdbcType=BIGINT},
-      </if>
       <if test="workflowName != null" >
         #{workflowName,jdbcType=VARCHAR},
       </if>

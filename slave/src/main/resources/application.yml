@@ -40,7 +40,9 @@ spring:
         # 当资源池连接用尽后，调用者的最大等待时间(单位为毫秒)
         # 默认 -1 表示永不超时，设置5秒
         max-wait: 5000
-
+slave:
+  tmp:
+    dir: data
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration:
